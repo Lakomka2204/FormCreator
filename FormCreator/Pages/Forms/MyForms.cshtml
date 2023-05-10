@@ -1,0 +1,54 @@
+﻿@page "/myforms"
+@model FormCreator.Pages.Forms.MyFormsModel
+@{
+    ViewData["Title"] = "User's forms";
+}
+
+<div class="card" data-bs-theme="dark">
+    <div class="card-header">
+        <h4 class="card-title">@(Model.FCUser.Username)'s forms</h4>
+    </div>
+    <h5 class="card-header bg-white text-muted">
+        Forms used:
+        <strong>
+            @Model.Forms.Length
+        </strong>
+        /
+        <strong>
+            @Model.FCUser.FormsAvailable
+        </strong>
+
+    </h5>
+    <div class="card-body">
+        <div class="container mb-2">
+            <div class="row">
+                <div class="col fw-bold">
+                    Name
+                </div>
+                <div class="col fw-bold">
+                    Indexing
+                </div>
+                <div class="col fw-bold">
+                    Actions
+                </div>
+            </div>
+        </div>
+        @foreach (var form in Model.Forms)
+        {
+            <div class="container mb-3">
+                <div class="row align-items-center">
+                    <div class="col text-secondary">
+                        @form.Name
+                    </div>
+                    <div class="col text-secondary">
+                        @(form.CanBeSearched ? "Yes" : "No")
+                    </div>
+                    <div class="col text-secondary">
+                        <a href="/edit/@form.Id" class="btn btn-outline-secondary">Edit</a>
+                        <a href="/view/@form.Id" class="btn btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

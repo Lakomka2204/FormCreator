@@ -1,0 +1,43 @@
+﻿@page "userheader"
+@using System.Security.Claims;
+@model object
+@{
+    bool email = bool.Parse(User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Gender)?.Value ?? "false");
+}
+
+<ul class="navbar-nav">
+    @if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        <li class="nav-item">
+            <div class="dropdown" data-bs-theme="light">
+                <a class="nav-link text-dark" type="button" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                    Menu
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonLight">
+                    @if (email)
+                    {
+                        <li><a class="dropdown-item" asp-page="/User/User" asp-route-id="@User?.Identity?.Name">My Account</a></li>
+                        <li><a class="dropdown-item" asp-page="/Forms/MyForms" asp-route-id="@User?.Identity?.Name">Forms</a></li>
+                        <li><a class="dropdown-item" asp-page="/Settings/MySettings">Settings</a></li>
+                    }
+                    else
+                    {
+                        <li><a class="dropdown-item fw-bold" asp-page="/User/EmailVerification">Verify Email</a></li>
+
+                    }
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" asp-page="/User/Logout">Logout</a></li>
+                </ul>
+            </div>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-page="/Pub/Login">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-page="/Pub/Register">Sign up</a>
+        </li>
+    }
+</ul>

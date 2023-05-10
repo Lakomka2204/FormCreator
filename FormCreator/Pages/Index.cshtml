@@ -1,0 +1,38 @@
+﻿@page "/index"
+@model FormCreator.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+@if (TempData["AccountDeletionDate"] != null)
+{
+    <script>
+        setTimeout(() => {
+            var myModalEl = document.getElementById('accountDeletedModal');
+            var modal = new window.bootstrap.Modal(myModalEl);
+            modal.show();
+        }, 100);
+    </script>
+}
+<div data-bs-theme="dark" class="d-flex align-items-center text-center flex-column justify-content-center vh-100">
+    <h1 class="display-4">Create and share forms quickly.</h1>
+    <a asp-page="/Pub/Register" class="display-6 text-decoration-none border-0 p-3 m-lg-5 rounded-3 btn-primary fw-normal">Create new account</a>
+</div>
+@if (TempData["AccountDeletionDate"] != null)
+{   
+<div class="modal fade" id="accountDeletedModal" tabindex="-1" aria-labelledby="accountDeletedModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Account planned for deletion.</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <span class="fs-6">Deletion date: @TempData["AccountDeletionDate"]</span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary mx-auto" data-bs-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+}

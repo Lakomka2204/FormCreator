@@ -1,0 +1,37 @@
+﻿@page "/verifyemail"
+@model FormCreator.Pages.User.EmailVerificationModel
+@{
+    ViewData["Title"] = "Verify Email";
+}
+@{
+    ViewBag.r = HttpContext.Items["UserError"]?.ToString();
+    if (!string.IsNullOrEmpty(ViewBag.r))
+    {
+        <div class="alert alert-danger">@ViewBag.r</div>
+    }
+}
+<h1 class="text-center">Verify Your Email</h1>
+<hr />
+<div class="p-1 text-center bg-white">
+
+    <p>Please enter the verification code that was sent to your email.</p>
+    <form method="post" class="d-flex align-items-baseline justify-content-center">
+        <div class="form-group">
+            <label asp-for="VerificationCode"></label>
+            <input asp-for="VerificationCode" class="form-control-sm border-1 m-1" autocomplete="off" value="" />
+        </div>
+        @if (ViewBag.r == null)
+        {
+            <button type="submit" class="btn btn-primary">Verify Email</button>
+        }
+        else
+        {
+            <button data-bs-toggle="modal" type="button" data-bs-target="#serviceUnavailable" class="btn btn-primary">Verify Email</button>
+        }
+    </form>
+    @if (TempData["EmailVerificationError"] != null)
+    {
+        <span class="text-danger fw-bold">@TempData["EmailVerificationError"]</span>
+    }
+    <span asp-validation-for="VerificationCode" class="text-danger"></span>
+</div>
