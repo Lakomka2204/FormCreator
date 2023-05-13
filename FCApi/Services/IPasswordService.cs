@@ -1,4 +1,4 @@
-﻿using FCApi.Models;
+﻿using ClassLibraryModel;
 
 namespace FCApi.Services
 {

@@ -1,0 +1,157 @@
+﻿@page "/forms/{id}"
+@model FormCreator.Pages.Forms.MyFormsModel
+@{
+    ViewData["Title"] = "User's forms";
+}
+@if (TempData["UserError"] != null)
+{
+    <div class="alert alert-danger alert-dismissible d-flex" role="alert">
+        <span>@TempData["UserError"]</span>
+        <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
+    </div>
+}
+@if (TempData["DeletedFormName"] != null)
+{
+    <div class="alert alert-success alert-dismissible d-flex" role="alert">
+        <span>
+            Form
+            <strong>
+                @TempData["DeletedFormName"]
+            </strong>
+            is deleted.
+        </span>
+        <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
+    </div>
+}
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">@(Model?.FCUser?.Username)'s forms</h4>
+    </div>
+    @if (Model?.SelfAccount ?? false)
+    {
+
+        <h5 class="card-header bg-white text-muted align-items-center">
+            Forms used:
+            <span class="@((Model?.Forms?.Count ?? -1) >= (Model?.FCUser?.FormsAvailable ?? -1) ? "text-danger" : "")">
+
+                <strong>
+                    @(Model?.Forms?.Count ?? -1)
+                </strong>
+                /
+                <strong>
+                    @(Model?.FCUser?.FormsAvailable ?? -1)
+                </strong>
+            </span>
+            <a class="btn btn-warning btn-sm ms-2">Get more</a>
+        </h5>
+    }
+    <div class="card-body">
+        <div class="container mb-2">
+            <div class="row">
+                <div class="col fw-bold">
+                    Name
+                </div>
+                <div class="col fw-bold">
+                    Indexing
+                </div>
+                <div class="col fw-bold">
+                    Actions
+                </div>
+            </div>
+        </div>
+        @if ((Model?.Forms?.Count ?? 0) == 0)
+        {
+            <div class="container mt-3 mx-auto">
+                <div class="text-center fs-5 mx-auto">
+                    No forms
+                </div>
+            </div>
+        }
+        else
+            @foreach (var form in Model.Forms)
+            {
+                <div class="container mb-3">
+                    <div class="row align-items-center">
+                        <div class="col text-secondary">
+                            @form.Name
+                        </div>
+                        <div class="col text-secondary">
+                            @(form.CanBeSearched ? "Yes" : "No")
+                        </div>
+                        <div class="col text-secondary">
+                            <a asp-page="/view/@form.Id" class="btn btn-outline-primary">View</a>
+                            @if (Model.SelfAccount)
+                            {
+                                <a asp-page="/Forms/AlterForm" asp-route-id="@form.Id" class="btn btn-outline-secondary">Edit</a>
+                                @*<a asp-page="/Forms/DeleteForm" asp-route-id="@form.Id" class="btn btn-outline-danger">Delete</a>*@
+                                <button data-bs-toggle="modal" data-bs-target="#deleteFormModal"
+                                        data-bs-id="@form.Id"
+                                        data-bs-name="@form.Name"
+                                        class="btn btn-outline-danger">
+                                    Delete
+                                </button>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+    </div>
+    @if (Model.SelfAccount)
+    {
+        <div class="card-footer">
+            <a class="btn btn-primary" asp-page="/Forms/CreateForm">New form</a>
+            <a class="btn btn-danger">Delete all forms</a>
+        </div>
+    }
+</div>
+<div class="modal fade" id="deleteFormModal" tabindex="-1" aria-labelledby="deleteFormModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="get" asp-page="/Forms/DeleteForm">
+                <div class="modal-body">
+                    <div class="d-flex flex-column">
+                        <div class="d-flex flex-row align-items-baseline">
+                            <input type="hidden" name="id" id="deleteFormModalId" />
+                            <span class="fs-6">
+                                Are you sure you want to delete
+                                <strong id="deleteFormName">
+
+                                </strong>?
+                            </span>
+                            @if (TempData["DeletedFormError"] != null)
+                            {
+                                <span class="text-danger">@TempData["DeletedFormError"]</span>
+                                TempData.Remove("DeletedFormError");
+                            }
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer flex-nowrap">
+                    <span class="fs-7 text-secondary flex-grow-1">
+                        If you're seeing error message twice, reload the page.
+                    </span>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var modal = document.getElementById('deleteFormModal');
+    modal.addEventListener('show.bs.modal', function (event) {
+        var btn = event.relatedTarget;
+        var id = btn.getAttribute('data-bs-id');
+        var formName = btn.getAttribute('data-bs-name');
+        var hInput = document.getElementById('deleteFormModalId');
+        var name = document.getElementById('deleteFormName');
+        name.textContent = formName;
+        hInput.value = id;
+    });
+</script>

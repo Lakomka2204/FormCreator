@@ -17,7 +17,7 @@
                     @if (email)
                     {
                         <li><a class="dropdown-item" asp-page="/User/User" asp-route-id="@User?.Identity?.Name">My Account</a></li>
-                        <li><a class="dropdown-item" asp-page="/Forms/MyForms" asp-route-id="@User?.Identity?.Name">Forms</a></li>
+                        <li><a class="dropdown-item" asp-page="/Forms/UserForms" asp-route-id="@User?.Identity?.Name">My Forms</a></li>
                         <li><a class="dropdown-item" asp-page="/Settings/MySettings">Settings</a></li>
                     }
                     else

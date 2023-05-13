@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
-using FCApi.Models;
 using ClassLibraryModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -43,7 +42,7 @@ namespace FormCreator.Pages.User
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
                 if (response.IsSuccessStatusCode)
-                    User = res.userModelResponse;
+                    FCUser = res.userModelResponse;
                 else
                     ModelState.AddModelError(string.Empty, res.error);
                 return Page();
@@ -62,7 +61,7 @@ namespace FormCreator.Pages.User
         [BindProperty]
         public bool SelfAccount { get; set; }
         [BindProperty]
-        public UserModel User { get; set; }
+        public UserModel FCUser { get; set; }
     }
 
 }

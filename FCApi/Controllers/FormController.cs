@@ -1,5 +1,4 @@
 ﻿using ClassLibraryModel;
-using FCApi.Models;
 using FCApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -13,82 +12,119 @@ namespace FCApi.Controllers
 {
     [Route("api/forms")]
     [ApiController]
-    public class FormController : FCBaseController
+    public class FormController : ControllerBase
     {
+        private readonly IUserService userService;
+        private readonly IJWT jwt;
         private readonly IFormService formService;
         public FormController(IUserService userService, IJWT jwt, IFormService formService)
-            : base(userService, jwt)
         {
+            this.userService = userService;
+            this.jwt = jwt;
             this.formService = formService;
         }
-        [HttpGet("{id}")]
-        public IActionResult GetById([Required] Guid id)
+        [HttpGet("form")]
+        public IActionResult GetById(string? token, string? fid)
         {
-            if (id == null) return NotFound("Id not found");
-            var form = formService.GetForm(id);
-            if (form == null) return NotFound("Form not found");
-            bool isOwner = false;
-            var auth = CheckAuth(x => true, out _, out UserModel? um);
-            if (auth == AuthStatus.Pass)
-                isOwner = form?.OwnerId == um.Id;
+            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
+            string id = jwt.DecryptTokenID(token);
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid token" });
+            if (fid == null) return BadRequest(new { error = "No fid." });
+            if (!Guid.TryParse(fid, out Guid ffid))
+                return BadRequest(new { error = "Invalid fid." });
+            var form = formService.GetForm(ffid);
+            if (form == null) return NotFound(new { error = "Form not found." });
+            var user = userService.GetUser(uid);
+            bool isOwner = form?.OwnerId == user.Id;
             if (!isOwner)
                 FormModel.RemovePrivateProperties(form);
-            return Ok(form);
+            return Ok(new { formModelResponse = form });
+        }
+        [HttpGet("")]
+        public IActionResult GetUserForms(string? uid)
+        {
+            if (uid == null) return BadRequest(new { error = "No uid." });
+            if (!Guid.TryParse(uid, out Guid uuid))
+                return BadRequest(new { error = "Invalid uid." });
+
+            var forms = formService.GetFormsByUser(uuid);
+            var user = userService.GetUser(uuid);
+            foreach (var form in forms)
+            {
+                if (form?.OwnerId != user.Id)
+                    FormModel.RemovePrivateProperties(form);
+            }
+            return Ok(new { formsModelResponse = forms });
         }
         [HttpGet("my")]
-        public IActionResult GetMyForms()
+        public IActionResult GetMyForms(string? token)
         {
-            var authStatus = CheckAuth(x => true, out string? jwtError, out UserModel? user);
-            switch (authStatus)
-            {
-                case AuthStatus.NoJwt:
-                    return Unauthorized("No jwt token");
-                case AuthStatus.ParseTokenFail:
-                    return Unauthorized(jwtError);
-            }
-            if (user == null) return Unauthorized("this null check vs2022 sucks");
-            return Ok(formService.GetFormsByUser(user.Id));
+            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
+            string id = jwt.DecryptTokenID(token);
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid token" });
+            var forms = formService.GetFormsByUser(uid);
+            return Ok(new { formsModelResponse = forms });
         }
         [HttpPost("create")]
-        public IActionResult CreateForm([FromBody] [Required] FormModel model)
+        public IActionResult CreateForm([FromBody][Required] FormAlterModel model)
         {
-            var authStatus = CheckAuth(x => true, out string? jwtError, out UserModel? user);
-            switch (authStatus)
-            {
-                case AuthStatus.NoJwt:
-                    return Unauthorized("No jwt token");
-                case AuthStatus.ParseTokenFail:
-                    return Unauthorized(jwtError);
-            }
-            if (user == null) return Unauthorized("this null check vs2022 sucks");
-            if (model == null && model.FormElements.Any(x => x.QuestionType == QuestionType.None))
-                return NotFound("Question type must not be 0");
+            if (string.IsNullOrWhiteSpace(model.Token)) return BadRequest(new { error = "No token" });
+            string id = jwt.DecryptTokenID(model.Token);
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid token" });
+            var user = userService.GetUser(uid);
+            if (user == null) return NotFound(new { error = "User not found." });
+
+            if (model == null && model.Form.FormElements.Any(x => x.QuestionType == QuestionType.None))
+                return NotFound(new { error = "Question type must not be 0" });
             var uforms = formService.GetFormsByUser(user.Id).Count;
             if (uforms >= user.FormsAvailable)
-                return Unauthorized($"Ran out of available forms ({user.FormsAvailable})");
-
-            model.OwnerId = user.Id;
-            var createdModel = formService.CreateForm(model);
+                return Unauthorized(new { error = $"Ran out of available forms." });
+            model.Form.Id = Guid.NewGuid();
+            model.Form.OwnerId = user.Id;
+            var createdModel = formService.CreateForm(model.Form);
             if (createdModel == null) return NotFound("No form questions");
-            return CreatedAtAction(nameof(GetById), new { id = model?.Id },createdModel);
+            return Ok(new { stringResponse = model?.Form?.Id });
         }
         [HttpDelete("delete")]
-        public IActionResult DeleteForm([Required] Guid formId)
+        public IActionResult DeleteForm(string? token, string? formId)
         {
-            var authStatus = CheckAuth(x => true, out string? jwtError, out UserModel? user);
-            switch (authStatus)
+            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
+            string id = jwt.DecryptTokenID(token);
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid token" });
+            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No formId" });
+            if (!Guid.TryParse(formId, out Guid fid))
+                return BadRequest(new { error = "Invalid form ID." });
+            var user = userService.GetUser(uid);
+            if (user == null) return NotFound(new { error = "User not found." });
+            var form = formService.GetForm(fid);
+            if (form == null) return NotFound(new { error = "Form not found." });
+
+            if (form.OwnerId != user.Id) return Unauthorized(new { error = "No permissions" });
+            formService.DeleteForm(fid);
+            return Ok(new { boolResponse = true, stringResponse = form.Name });
+        }
+        [HttpDelete("deleteall")]
+        public IActionResult DeleteAll(string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
+            string id = jwt.DecryptTokenID(token);
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid token" });
+
+            var user = userService.GetUser(uid);
+            if (user == null) return NotFound(new { error = "User not found." });
+            var forms = formService.GetFormsByUser(uid);
+            int formsDeleted = 0;
+            foreach(var form in forms)
             {
-                case AuthStatus.NoJwt:
-                    return Unauthorized("No jwt token");
-                case AuthStatus.ParseTokenFail:
-                    return Unauthorized(jwtError);
-            }
-            if (user == null) return Unauthorized("this null check vs2022 sucks");
-            var form = formService.GetForm(formId);
-            if (form == null) return NotFound($"Form with id ({formId}) not found.");
-            if (form.OwnerId != user.Id) return Unauthorized("No permissions");
-            formService.DeleteForm(formId);
-            return Ok("Form deleted.");
+                if (formService.DeleteForm(form.Id))
+                    formsDeleted++;
+            }    
+            return Ok(new { stringResponse = $"Deleted {formsDeleted} forms."});
         }
         [HttpGet("search")]
         public IActionResult SearchForm(string? q)
@@ -97,23 +133,21 @@ namespace FCApi.Controllers
             return Ok(formService.SearchForm(q));
         }
         [HttpPut("edit")]
-        public IActionResult EditForm([Required][FromBody] FormModel newModel)
+        public IActionResult EditForm([Required][FromBody] FormAlterModel newModel)
         {
-            var authStatus = CheckAuth(x => true, out string? jwtError, out UserModel? user);
-            switch (authStatus)
-            {
-                case AuthStatus.NoJwt:
-                    return Unauthorized("No jwt token");
-                case AuthStatus.ParseTokenFail:
-                    return Unauthorized(jwtError);
-            }
-            if (user == null) return Unauthorized("this null check vs2022 sucks");
-            var form = formService.GetForm(newModel.Id);
-            if (form == null) return NotFound($"Form with id ({newModel.Id}) not found.");
+            if (string.IsNullOrWhiteSpace(newModel.Token)) return BadRequest(new { error = "No token" });
+            string id = jwt.DecryptTokenID(newModel.Token);
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid token" });
+            var user = userService.GetUser(uid);
+            if (user == null) return Unauthorized(new { error = "User not found." });
+            var form = formService.GetForm(newModel.Form.Id);
+            if (form == null) return NotFound($"Form with id ({newModel.Form.Id}) not found.");
             if (form.OwnerId != user.Id) return Unauthorized("No permissions");
-            if (form == newModel) return BadRequest("Form hasn't changed (BK)");
-            formService.EditForm(newModel);
-            return Ok();
+            newModel.Form.OwnerId = user.Id; // на всякий случай, а его можно менять
+            if (form == newModel.Form) return BadRequest("Form hasn't changed (BK)");
+            formService.EditForm(newModel.Form);
+            return Ok(new { boolResponse = true });
         }
 
     }

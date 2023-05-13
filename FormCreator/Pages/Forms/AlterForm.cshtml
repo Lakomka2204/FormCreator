@@ -1,0 +1,104 @@
+﻿@page "/edit/{id}/{handler?}"
+@model FormCreator.Pages.Forms.AlterFormModel
+@using ClassLibraryModel
+@{
+    ViewData["Title"] = "New form";
+}
+@Html.EditorForModel()
+
+@if (TempData["UserError"] != null)
+{
+    <div class="alert alert-danger alert-dismissible d-flex" role="alert">
+        <span>@TempData["UserError"]</span>
+        <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
+    </div>
+}
+@if (TempData["UserSuccess"] != null)
+{
+    <div class="alert alert-success alert-dismissible d-flex" role="alert">
+        <span>@TempData["UserSuccess"]</span>
+        <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
+    </div>
+}
+@if (Model.Form != null)
+{
+    <form method="post" >
+        <input type="hidden" asp-for="Form.Id" readonly>
+        <input type="hidden" asp-for="Form.OwnerId" readonly>
+        <div class="container">
+            <div class="d-flex justify-content-between m-1">
+                <div class="d-flex">
+                    <a class="btn btn-sm btn-outline-secondary m-1" asp-page="/Forms/UserForms" asp-route-id="@User?.Identity?.Name">Back to my forms</a>
+                </div>
+                <div class="d-flex justify-content-end align-items-center">
+
+                    <div class="dropdown">
+                        <a class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
+                            Add Form Element
+                        </a>
+
+                        <ul class="dropdown-menu" aria-labelledby="addFormElementDropdown">
+                            <li><a asp-page-handler="Add" asp-route-type="ShortTextFormElementModel" class="dropdown-item add-form-element" >Short Text</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="LongTextFormElementModel" class="dropdown-item add-form-element">Long Text</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="DateFormElementModel" class="dropdown-item add-form-element">Date</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="TimeFormElementModel" class="dropdown-item add-form-element">Time</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="SingleOptionFormElementModel" class="dropdown-item add-form-element">Single Option</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="MultipleOptionsFormElementModel" class="dropdown-item add-form-element">Multiple Options</a></li>
+                            @*<li><button type="button" class="dropdown-item add-form-element" data-formelementtype="ShortTextFormElementModel">Short Text</button></li>
+                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="LongTextFormElementModel">Long Text</button></li>
+                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="DateFormElementModel">Date</button></li>
+                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="TimeFormElementModel">Time</button></li>
+                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="SingleOptionFormElementModel">Single Option</button></li>
+                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="MultipleOptionsFormElementModel">Multiple Options</button></li>*@
+                        </ul>
+                    </div>
+                    <button type="reset" class="btn btn-sm btn-outline-dark m-1">Revert</button>
+                    <a class="btn btn-sm btn-outline-dark m-1" asp-page-handler="Get" asp-route-reset="true">Revert</a>
+                    <button type="submit" class="btn btn-sm btn-primary m-1">Save changes</button>
+
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <input class="card-title form-control-plaintext p-0 h4 " asp-for="Form.Name" />
+                </div>
+                <input class="card-header bg-white fs-7 form-control-plaintext" type="text" asp-for="Form.Description" placeholder="Description" />
+                <div class="card-body bg-light" id="formElementsContainer">
+                    @if ((Model?.Form?.FormElements?.Count ?? 0) == 0)
+                    {
+                        <div class="container mt-3 mx-auto">
+                            <div class="text-center fs-5 mx-auto">
+                                No elements
+                            </div>
+                        </div>
+                    }
+                    @foreach (var formElement in Model?.Form?.FormElements)
+                    {
+                        switch (formElement)
+                        {
+                            case ShortTextFormElementModel shortText:
+                                <partial name="/Pages/FormElements/ShortTextFormElementModel.cshtml" for="@shortText" />
+                                break;
+                            case LongTextFormElementModel longText:
+                                <partial name="/Pages/FormElements/LongTextFormElementModel.cshtml" for="@longText" />
+                                break;
+                            case DateFormElementModel date:
+                                <partial name="/Pages/FormElements/DateFormElementModel.cshtml" for="@date" />
+                                break;
+                            case TimeFormElementModel time:
+                                <partial name="/Pages/FormElements/TimeFormElementModel.cshtml" for="@time" />
+                                break;
+                            case SingleOptionFormElementModel singleOption:
+                                <partial name="/Pages/FormElements/SingleOptionFormElementModel.cshtml" for="@singleOption" />
+                                break;
+                            case MultipleOptionsFormElementModel multipleOptions:
+                                <partial name="/Pages/FormElements/MultipleOptionsFormElementModel.cshtml" for="@multipleOptions" />
+                                break;
+                        }
+                    }
+
+                </div>
+            </div>
+        </div>
+    </form>
+}

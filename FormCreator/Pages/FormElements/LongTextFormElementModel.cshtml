@@ -1,0 +1,18 @@
+﻿@using ClassLibraryModel
+@model LongTextFormElementModel
+<div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+    <input asp-for="QuestionType" name="Form.FormElements[@Model.Index].QuestionType" type="hidden" />
+    <div class="d-flex flex-row align-items-center">
+        <h5 class="text-center">Long text question</h5>
+        <div class="border-bottom flex-grow-1 ms-2 me-2 border-dark"></div>
+
+    </div>
+    <div class="form-group">
+        <input asp-for="Question" name="Form.FormElements[@Model.Index].Question" class="form-control-plaintext mb-1 h4" />
+        <span asp-validation-for="Question" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <textarea asp-for="Answer" name="Form.FormElements[@Model.Index].Answer" class="form-control"></textarea>
+        <span asp-validation-for="Answer" class="text-danger"></span>
+    </div>
+</div>

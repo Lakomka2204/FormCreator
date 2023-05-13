@@ -23,6 +23,12 @@ namespace FormCreator.Pages.Public
             this.httpClientFactory = httpClientFactory;
             jwtService = jwtConfig;
         }
+        public IActionResult OnGet()
+        {
+            if (User.Identity.IsAuthenticated)
+                return Redirect($"/user/{User.Identity.Name}");
+            else return Page();
+        }
         public async Task<IActionResult> OnPostAsync()
         {
             try

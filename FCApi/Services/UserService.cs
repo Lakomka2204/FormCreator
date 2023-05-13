@@ -1,5 +1,4 @@
 ﻿using ClassLibraryModel;
-using FCApi.Models;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using static FCApi.Services.IUserService;

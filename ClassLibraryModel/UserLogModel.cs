@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace FCApi.Models
+namespace ClassLibraryModel
 {
     public class UserLogModel
     {

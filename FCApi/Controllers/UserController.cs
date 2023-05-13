@@ -1,5 +1,4 @@
 ﻿using ClassLibraryModel;
-using FCApi.Models;
 using FCApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

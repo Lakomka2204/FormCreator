@@ -1,5 +1,4 @@
 ﻿using ClassLibraryModel;
-using FCApi.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.IdentityModel.Tokens.Jwt;
 

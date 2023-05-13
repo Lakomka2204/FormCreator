@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace FCApi.Models
+namespace ClassLibraryModel
 {
     public enum QuestionType
     {
@@ -29,6 +29,7 @@ namespace FCApi.Models
     public class BaseFormElementModel
     {
         [Required]
+        [Display(Name = "Question", Prompt = "Enter your question")]
         [BsonElement("question")]
         [JsonPropertyName("question")]
         public string Question { get; set; } = string.Empty;
@@ -36,6 +37,9 @@ namespace FCApi.Models
         [BsonElement("question_type")]
         [JsonPropertyName("questionType")]
         public QuestionType QuestionType { get; set; } = QuestionType.None;
+        [Required]
+        [JsonPropertyName("index")]
+        public int Index { get; set; }
     }
     [BsonDiscriminator(nameof(DateFormElementModel))]
     public class DateFormElementModel : BaseFormElementModel
@@ -44,6 +48,7 @@ namespace FCApi.Models
         [BsonDateTimeOptions(DateOnly = true, Kind = DateTimeKind.Utc, Representation = BsonType.DateTime)]
         [BsonElement("date")]
         [JsonPropertyName("date")]
+        [Display(Name = "Date", Prompt = "Choose date")]
         public DateTime Date { get; set; }
         public DateFormElementModel()
         {
@@ -56,6 +61,8 @@ namespace FCApi.Models
         [Required]
         [JsonPropertyName("answer")]
         [BsonElement("answer")]
+        [Display(Name = "Your answer", Prompt = "Enter correct answer")]
+        [MaxLength(256)]
         public string Answer { get; set; } = string.Empty;
         public ShortTextFormElementModel()
         {
@@ -68,6 +75,8 @@ namespace FCApi.Models
         [Required]
         [JsonPropertyName("answer")]
         [BsonElement("answer")]
+        [Display(Name = "Your answer", Prompt = "Enter your answer")]
+        [DataType(DataType.MultilineText)]
         public string Answer { get; set; } = string.Empty;
         public LongTextFormElementModel()
         {
@@ -81,7 +90,12 @@ namespace FCApi.Models
         [BsonTimeSpanOptions(BsonType.String)]
         [BsonElement("time")]
         [JsonPropertyName("time")]
+        [Display(Name = "Time", Prompt = "Choose time")]
         public TimeSpan Time { get; set; }
+        public TimeFormElementModel()
+        {
+            QuestionType = QuestionType.Time;
+        }
     }
     [BsonDiscriminator(nameof(SingleOptionFormElementModel))]
     public class SingleOptionFormElementModel : BaseFormElementModel
@@ -89,11 +103,17 @@ namespace FCApi.Models
         [Required]
         [JsonPropertyName("options")]
         [BsonElement("options")]
-        public string[] Options { get; set; } = Array.Empty<string>();
+        [Display(Name = "Options", Prompt = "Choose single option")]
+
+        public List<string> Options { get; set; } = new List<string>();
         [Required]
         [JsonPropertyName("correctAnswer")]
         [BsonElement("correct_answer")]
-        internal int CorrectAnswer { get; set; }
+        public int CorrectAnswer { get; set; }
+        public SingleOptionFormElementModel()
+        {
+            QuestionType = QuestionType.SingleOption;
+        }
     }
     [BsonDiscriminator(nameof(MultipleOptionsFormElementModel))]
     public class MultipleOptionsFormElementModel : BaseFormElementModel
@@ -101,11 +121,17 @@ namespace FCApi.Models
         [Required]
         [JsonPropertyName("options")]
         [BsonElement("options")]
-        public string[] Options { get; set; } = Array.Empty<string>();
+        [Display(Name = "Options", Prompt = "Choose multiple options")]
+        public List<string> Options { get; set; } = new List<string>();
         [Required]
         [JsonPropertyName("correctAnswers")]
         [BsonElement("correct_answers")]
-        internal int[] CorrectAnswers { get; set; } = Array.Empty<int>();
+        [Display(Name = "Correct answers", Prompt = "Choose answers")]
+        public List<bool> CorrectAnswers { get; set; } = new List<bool>();
+        public MultipleOptionsFormElementModel()
+        {
+            QuestionType = QuestionType.MultipleOptions;
+        }
     }
     public class FormElementConverter : JsonConverter<BaseFormElementModel>
     {

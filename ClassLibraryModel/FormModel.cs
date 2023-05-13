@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace FCApi.Models
+namespace ClassLibraryModel
 {
     public class FormModel
     {
@@ -14,6 +14,9 @@ namespace FCApi.Models
         [JsonPropertyName("name")]
         [BsonElement("name")]
         public string Name { get; set; }
+        [JsonPropertyName("description")]
+        [BsonElement("desc")]
+        public string? Description { get; set; }
         [Required]
         [JsonPropertyName("ownerId")]
         [BsonElement("ownerid")]
@@ -22,10 +25,9 @@ namespace FCApi.Models
         [JsonPropertyName("canBeSearched")]
         [BsonElement("can_be_searched")]
         public bool CanBeSearched { get; set; }
-        [Required]
         [JsonPropertyName("formElements")]
         [BsonElement("form_elements")]
-        public List<BaseFormElementModel> FormElements { get; set; }
+        public List<BaseFormElementModel>? FormElements { get; set; }
         public static void RemovePrivateProperties(FormModel? form)
         {
             if (form == null) return;

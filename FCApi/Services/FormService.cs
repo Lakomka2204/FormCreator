@@ -1,5 +1,4 @@
-﻿using FCApi.Models;
-using MongoDB.Bson.Serialization;
+﻿using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using ClassLibraryModel;

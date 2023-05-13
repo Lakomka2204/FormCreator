@@ -1,5 +1,4 @@
 ﻿using ClassLibraryModel;
-using FCApi.Models;
 using MongoDB.Driver;
 using System.Net.Mail;
 using System.Text;

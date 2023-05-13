@@ -42,6 +42,7 @@ builder.Services.AddAuthentication("jwt")
         options.Cookie.Name = "jwt";
         options.LoginPath = "/login";
         options.LogoutPath = "/logout";
+        options.ReturnUrlParameter = "ret";
 
         options.Events = new CookieAuthenticationEvents()
         {

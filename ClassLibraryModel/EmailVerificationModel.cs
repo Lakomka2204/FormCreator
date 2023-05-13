@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace FCApi.Models
+namespace ClassLibraryModel
 {
     public class EmailVerificationModel
     {

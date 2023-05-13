@@ -1,4 +1,4 @@
-﻿using FCApi.Models;
+﻿using ClassLibraryModel;
 using Microsoft.AspNetCore.Identity;
 
 namespace FCApi.Services
