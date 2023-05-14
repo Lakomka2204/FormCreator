@@ -16,7 +16,7 @@ namespace FormCreator.Pages.Forms
             this.httpClientFactory = httpClientFactory;
         }
         public UserModel? FCUser { get; set; }
-        public List<FormModel> Forms { get; set; }
+        public List<FormModelV2> Forms { get; set; }
         public bool SelfAccount { get; private set; }
         public async Task<IActionResult> OnGetAsync(string? id)
         {
@@ -71,7 +71,7 @@ namespace FormCreator.Pages.Forms
                     return Page();
                 }
                 if (r2s.formsModelResponse == null)
-                    Forms = new List<FormModel>(0);
+                    Forms = new List<FormModelV2>(0);
                 else
                     Forms = r2s.formsModelResponse;
                 return Page();

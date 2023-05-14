@@ -38,7 +38,7 @@ namespace FCApi.Controllers
             var user = userService.GetUser(uid);
             bool isOwner = form?.OwnerId == user.Id;
             if (!isOwner)
-                FormModel.RemovePrivateProperties(form);
+                FormModelV2.RemovePrivateProperties(form);
             return Ok(new { formModelResponse = form });
         }
         [HttpGet("")]
@@ -53,7 +53,7 @@ namespace FCApi.Controllers
             foreach (var form in forms)
             {
                 if (form?.OwnerId != user.Id)
-                    FormModel.RemovePrivateProperties(form);
+                    FormModelV2.RemovePrivateProperties(form);
             }
             return Ok(new { formsModelResponse = forms });
         }
@@ -85,7 +85,7 @@ namespace FCApi.Controllers
             model.Form.Id = Guid.NewGuid();
             model.Form.OwnerId = user.Id;
             var createdModel = formService.CreateForm(model.Form);
-            if (createdModel == null) return NotFound("No form questions");
+            if (createdModel == null) return NotFound(new { error = "No form questions" });
             return Ok(new { stringResponse = model?.Form?.Id });
         }
         [HttpDelete("delete")]
@@ -119,18 +119,18 @@ namespace FCApi.Controllers
             if (user == null) return NotFound(new { error = "User not found." });
             var forms = formService.GetFormsByUser(uid);
             int formsDeleted = 0;
-            foreach(var form in forms)
+            foreach (var form in forms)
             {
                 if (formService.DeleteForm(form.Id))
                     formsDeleted++;
-            }    
-            return Ok(new { stringResponse = $"Deleted {formsDeleted} forms."});
+            }
+            return Ok(new { stringResponse = $"Deleted {formsDeleted} forms." });
         }
         [HttpGet("search")]
         public IActionResult SearchForm(string? q)
         {
-            if (string.IsNullOrWhiteSpace(q)) return BadRequest("No query input");
-            return Ok(formService.SearchForm(q));
+            if (string.IsNullOrWhiteSpace(q)) return BadRequest(new { error = "No query input" });
+            return Ok(new { formsModelResponse = formService.SearchForm(q) });
         }
         [HttpPut("edit")]
         public IActionResult EditForm([Required][FromBody] FormAlterModel newModel)
@@ -142,10 +142,10 @@ namespace FCApi.Controllers
             var user = userService.GetUser(uid);
             if (user == null) return Unauthorized(new { error = "User not found." });
             var form = formService.GetForm(newModel.Form.Id);
-            if (form == null) return NotFound($"Form with id ({newModel.Form.Id}) not found.");
-            if (form.OwnerId != user.Id) return Unauthorized("No permissions");
-            newModel.Form.OwnerId = user.Id; // на всякий случай, а его можно менять
-            if (form == newModel.Form) return BadRequest("Form hasn't changed (BK)");
+            if (form == null) return NotFound(new { error = $"Form with id ({newModel.Form.Id}) not found." });
+            if (form.OwnerId != user.Id) return Unauthorized(new { error = "No permissions" });
+            newModel.Form.OwnerId = user.Id;
+            if (form == newModel.Form) return BadRequest(new { error = "Form hasn't changed (BK)" });
             formService.EditForm(newModel.Form);
             return Ok(new { boolResponse = true });
         }

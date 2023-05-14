@@ -24,16 +24,18 @@ namespace FormCreator.Pages.Forms
             string endpoint = "api/forms/create";
             FormAlterModel model = new FormAlterModel()
             {
-                Form = new FormModel()
+                Form = new FormModelV2()
                 {
                     Name = "New form",
                     Description = "",
                     CanBeSearched = false,
-                    FormElements = new List<BaseFormElementModel>(1)
+                    FormElements = new List<GeneralFormElementModel>(1)
                         {
-                            new ShortTextFormElementModel()
+                            new GeneralFormElementModel()
                             {
-                                Question = "What do you want to ask?",
+                                Question = "example question",
+                                Answer = "example answer",
+                                QuestionType = QuestionType.ShortText,
                             }
                         },
                 },

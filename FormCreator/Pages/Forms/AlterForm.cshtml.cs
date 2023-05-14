@@ -25,8 +25,8 @@ namespace FormCreator.Pages.Forms
             this.httpClientFactory = httpClientFactory;
         }
         [BindProperty]
-        public FormModel Form { get; set; }
-        public IActionResult OnGetAdd(string? type, string? id)
+        public FormModelV2 Form { get; set; }
+        public IActionResult OnGetAdd(string? type, string id)
         {
 
             if (string.IsNullOrEmpty(type))
@@ -35,178 +35,188 @@ namespace FormCreator.Pages.Forms
                 return BadRequest("Invalid parameter");
             }
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
             switch (type)
             {
                 case nameof(ShortTextFormElementModel):
-                    form?.FormElements?.Add(new ShortTextFormElementModel()
-                    {
-                        Question = "What do you want to ask?",
-                        Answer = "Write the correct answer here",
-                        Index = form.FormElements.Count,
-                        QuestionType = QuestionType.ShortText,
-                    });
+                    form?.FormElements?.Add(
+                        new GeneralFormElementModel()
+                        {
+                            Question = "What do you want to ask?",
+                            Answer = "Write the correct answer here",
+                            Index = form.FormElements.Count,
+                            QuestionType = QuestionType.ShortText,
+                        });
                     break;
                 case nameof(LongTextFormElementModel):
-                    form?.FormElements?.Add(new LongTextFormElementModel()
-                    {
-                        Question = "Ask people about something that long that they couldn't fit in one paragraph",
-                        Answer = "I don't think there should be a correct answer, but if you want, you're good to go",
-                        Index = form.FormElements.Count,
-                        QuestionType = QuestionType.LongText,
-                    });
+                    form?.FormElements?.Add(
+                        new GeneralFormElementModel()
+                        {
+                            Question = "Ask people about something that long that they couldn't fit in one paragraph",
+                            Answer = "I don't think there should be a correct answer, but if you want, you're good to go",
+                            Index = form.FormElements.Count,
+                            QuestionType = QuestionType.LongText,
+                        });
                     break;
                 case nameof(TimeFormElementModel):
-                    form?.FormElements?.Add(new TimeFormElementModel()
-                    {
-                        Question = "What's the time?",
-                        Time = DateTime.UtcNow.TimeOfDay,
-                        Index = form.FormElements.Count,
-                        QuestionType = QuestionType.Time,
-                    });
+                    form?.FormElements?.Add(
+                        new GeneralFormElementModel()
+                        {
+                            Question = "What's the time?",
+                            Answer = DateTime.UtcNow.TimeOfDay.ToString("hh\\:mm\\:ss"),
+                            Index = form.FormElements.Count,
+                            QuestionType = QuestionType.Time,
+                        });
                     break;
                 case nameof(DateFormElementModel):
-                    form?.FormElements?.Add(new DateFormElementModel()
-                    {
-                        Question = "What's the funny date?",
-                        Date = new DateTime(2001, 9, 11),
-                        Index = form.FormElements.Count,
-                        QuestionType = QuestionType.Date,
-                    });
+                    form?.FormElements?.Add(
+                        new GeneralFormElementModel()
+                        {
+                            Question = "What's the funny date?",
+                            Answer = new DateTime(2001, 9, 11),
+                            Index = form.FormElements.Count,
+                            QuestionType = QuestionType.Date,
+                        });
                     break;
                 case nameof(SingleOptionFormElementModel):
-                    form?.FormElements?.Add(new SingleOptionFormElementModel()
-                    {
-                        Question = "What's your favourite color?",
-                        Options = new List<string>()
+                    form?.FormElements?.Add(
+                        new GeneralFormElementModel()
                         {
-                            "Red",
-                            "Green",
-                            "Blue"
-                        },
-                        CorrectAnswer = 1,
-                        Index = form.FormElements.Count,
-                        QuestionType = QuestionType.SingleOption,
-                    });
+                            Question = "What's your favourite color?",
+                            Options = new List<string>()
+                            {
+                                "red", "green","blue"
+                            },
+                            MultiChoice = false,
+                            Answer = 1,
+                            Index = form.FormElements.Count,
+                            QuestionType = QuestionType.SingleOption,
+                        });
                     break;
                 case nameof(MultipleOptionsFormElementModel):
-                    form?.FormElements?.Add(new MultipleOptionsFormElementModel()
-                    {
-                        Question = "Do you agree to the following?",
-                        Options = new List<string>()
+                    form?.FormElements?.Add(
+                        new GeneralFormElementModel()
                         {
-                            "Enter your option",
-                        },
-                        Index = form.FormElements.Count,
-                        CorrectAnswers = new List<bool>() { true, true, false },
-                        QuestionType = QuestionType.MultipleOptions,
-                    });
+                            Question = "Do you agree to the following?",
+                            Options = new List<string>()
+                            {
+                                "Enter your options",
+                                "You can have lots of them",
+                            },
+                            Answer = new List<int>(0),
+                            MultiChoice = true,
+                            Index = form.FormElements.Count,
+                            QuestionType = QuestionType.MultipleOptions,
+                        });
                     break;
             }
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset=false });
+            return RedirectToPage("AlterForm", "", new { id, reset = false });
         }
         public IActionResult OnGetAddMultiple(int index, string id)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
-            if (form.FormElements[index] is not MultipleOptionsFormElementModel)
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
-            var multiple = form.FormElements[index] as MultipleOptionsFormElementModel;
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
+            if (form.FormElements[index].QuestionType != QuestionType.MultipleOptions)
+            {
+                TempData["UserError"] = "Type mismatch.";
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
+            }
+            var multiple = form.FormElements[index];
             multiple.Options.Add("New item");
-            multiple.CorrectAnswers.Add(false);
             form.FormElements[index] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset=false });
+            return RedirectToPage("AlterForm", "", new { id, reset = false });
         }
         public IActionResult OnGetAddSingle(int index, string id)
         {
 
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of range.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
-            if (form.FormElements[index] is not SingleOptionFormElementModel)
+            if (form.FormElements[index].QuestionType != QuestionType.SingleOption)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
-            var multiple = form.FormElements[index] as SingleOptionFormElementModel;
+            var multiple = form.FormElements[index];
             multiple.Options.Add("New item");
             form.FormElements[index] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset=false });
+            return RedirectToPage("AlterForm", "", new { id, reset = false });
         }
         public IActionResult OnGetRemoveSingle(string id, int oindex, int iindex)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
             if (oindex < 0 || oindex >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of outer range.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
-            if (form.FormElements[oindex] is not SingleOptionFormElementModel)
+            if (form.FormElements[oindex].QuestionType != QuestionType.SingleOption)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
-            var multiple = form.FormElements[oindex] as SingleOptionFormElementModel;
+            var multiple = form.FormElements[oindex];
             if (iindex < 0 || iindex >= multiple.Options.Count)
             {
                 TempData["UserError"] = "Out of inner range.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
             if (multiple.Options.Count <= 2)
             {
                 TempData["UserError"] = "There must be at least two options.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
             multiple.Options.RemoveAt(iindex);
             form.FormElements[oindex] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset=false });
+            return RedirectToPage("AlterForm", "", new { id, reset = false });
         }
         public IActionResult OnGetRemoveMultiple(string id, int oindex, int iindex)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
             if (oindex < 0 || oindex >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of outer range.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
-            if (form.FormElements[oindex] is not MultipleOptionsFormElementModel)
+            if (form.FormElements[oindex].QuestionType != QuestionType.MultipleOptions)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
-            var multiple = form.FormElements[oindex] as MultipleOptionsFormElementModel;
+            var multiple = form.FormElements[oindex];
             if (iindex < 0 || iindex >= multiple.Options.Count)
             {
                 TempData["UserError"] = "Out of inner range.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
             if (multiple.Options.Count <= 2)
             {
                 TempData["UserError"] = "There must be at least two options.";
-                return RedirectToPage("AlterForm", "", new { id, reset=false });
+                return RedirectToPage("AlterForm", "", new { id, reset = false });
             }
             multiple.Options.RemoveAt(iindex);
             form.FormElements[oindex] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset=false });
+            return RedirectToPage("AlterForm", "", new { id, reset = false });
         }
+
         public async Task<IActionResult> OnPostAsync()
         {
 
@@ -222,13 +232,39 @@ namespace FormCreator.Pages.Forms
             using var client = httpClientFactory.CreateClient("FCApiClient");
             string endpoint = "api/forms/edit";
             if (Form.FormElements == null)
-                Form.FormElements = new List<BaseFormElementModel>(0);
+                Form.FormElements = new List<GeneralFormElementModel>(0);
             if (Form.Description == null)
                 Form.Description = string.Empty;
-            FormAlterModel fm = new FormAlterModel
+            for (int i = 0; i < Form.FormElements.Count; i++)
             {
-                Form = Form,
-                Token = Request.Cookies["jwt"]
+                if (Form.FormElements[i].Answer != null) continue;
+                var actualValue = Request.Form.FirstOrDefault(x => x.Key.Contains($"[{i}].Answer"));
+                switch (Form.FormElements[i].QuestionType)
+                {
+                    case QuestionType.None:
+                        throw new Exception("crazy fucker how did you do questiontype.none, go back monke to your cave");
+                    case QuestionType.ShortText:
+                    case QuestionType.LongText:
+                        Form.FormElements[i].Answer = actualValue.Value[0];
+                        break;
+                    case QuestionType.Time:
+                        Form.FormElements[i].Answer = TimeSpan.Parse(actualValue.Value[0] ?? "00:00:00").ToString("hh\\:mm\\:ss");
+                        break;
+                        case QuestionType.Date:
+                        Form.FormElements[i].Answer = DateTime.Parse(actualValue.Value[0] ?? DateTime.MinValue.ToString()).ToString("yyyy-MM-dd");
+                        break;
+                    case QuestionType.SingleOption:
+                        Form.FormElements[i].Answer = int.Parse(actualValue.Value[0] ?? "0");
+                        break;
+                    case QuestionType.MultipleOptions:
+                        Form.FormElements[i].Answer = actualValue.Value.Select(int.Parse).ToList();
+                        break;
+                }
+            }
+            var fm = new
+            {
+                form = Form,
+                token = Request.Cookies["jwt"]
             };
             var json = JsonSerializer.Serialize(fm);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -241,13 +277,14 @@ namespace FormCreator.Pages.Forms
                 return Page();
             }
             TempData["UserSuccess"] = res.boolResponse ?? false ? $"Form was updated." : "Form remained the same";
-            return Page();
+            TempData.Remove("Form");
+            return RedirectToPage("AlterForm", "", new { id = Form.Id, reset = true });
         }
         public async Task<IActionResult> OnGetAsync(string? id, bool? reset)
         {
             if (TempData["Form"] != null && (!reset ?? false))
             {
-                Form = JsonSerializer.Deserialize<FormModel>(TempData["Form"].ToString());
+                Form = JsonSerializer.Deserialize<FormModelV2>(TempData["Form"].ToString());
                 TempData["Form"] = JsonSerializer.Serialize(Form);
                 return Page();
             }

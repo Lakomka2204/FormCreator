@@ -22,7 +22,7 @@
 }
 @if (Model.Form != null)
 {
-    <form method="post" >
+    <form method="post" id="mainForm">
         <input type="hidden" asp-for="Form.Id" readonly>
         <input type="hidden" asp-for="Form.OwnerId" readonly>
         <div class="container">
@@ -74,31 +74,53 @@
                     }
                     @foreach (var formElement in Model?.Form?.FormElements)
                     {
-                        switch (formElement)
+                        switch (formElement.QuestionType)
                         {
-                            case ShortTextFormElementModel shortText:
-                                <partial name="/Pages/FormElements/ShortTextFormElementModel.cshtml" for="@shortText" />
+                            case QuestionType.ShortText:
+                                <partial name="/Pages/FormElements/ShortTextFormElementModel.cshtml" for="@formElement" />
                                 break;
-                            case LongTextFormElementModel longText:
-                                <partial name="/Pages/FormElements/LongTextFormElementModel.cshtml" for="@longText" />
+                            case QuestionType.LongText:
+                                <partial name="/Pages/FormElements/LongTextFormElementModel.cshtml" for="@formElement" />
                                 break;
-                            case DateFormElementModel date:
-                                <partial name="/Pages/FormElements/DateFormElementModel.cshtml" for="@date" />
+                            case QuestionType.Date:
+                                <partial name="/Pages/FormElements/DateFormElementModel.cshtml" for="@formElement" />
                                 break;
-                            case TimeFormElementModel time:
-                                <partial name="/Pages/FormElements/TimeFormElementModel.cshtml" for="@time" />
+                            case QuestionType.Time:
+                                <partial name="/Pages/FormElements/TimeFormElementModel.cshtml" for="@formElement" />
                                 break;
-                            case SingleOptionFormElementModel singleOption:
-                                <partial name="/Pages/FormElements/SingleOptionFormElementModel.cshtml" for="@singleOption" />
+                            case QuestionType.SingleOption:
+                                <partial name="/Pages/FormElements/SingleOptionFormElementModel.cshtml" for="@formElement" />
                                 break;
-                            case MultipleOptionsFormElementModel multipleOptions:
-                                <partial name="/Pages/FormElements/MultipleOptionsFormElementModel.cshtml" for="@multipleOptions" />
+                            case QuestionType.MultipleOptions:
+                                <partial name="/Pages/FormElements/MultipleOptionsFormElementModel.cshtml" for="@formElement" />
                                 break;
                         }
                     }
-
                 </div>
             </div>
         </div>
     </form>
 }
+<script>
+    function submitForm()
+    {
+        var form = $('#mainForm').serializeArray();
+        var formData = JSON.stringify(Object.fromEntries(form.map(x => [x.name, x.value])));
+        $.ajax({
+            type: "POST",
+            url: location.href,
+            data: formData,
+            dataType: "json",
+            contentType:"application/json",
+            success: function (res) {
+                location.reload()
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log(xhr);
+                console.log(textStatus);
+                console.log(errorThrown);
+            }
+        });
+        console.log(formData);
+    }
+</script>

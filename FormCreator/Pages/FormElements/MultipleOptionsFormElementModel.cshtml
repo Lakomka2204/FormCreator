@@ -1,8 +1,9 @@
 ﻿@using ClassLibraryModel
-@model MultipleOptionsFormElementModel
+@model GeneralFormElementModel
 
 <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
     <input asp-for="QuestionType" name="Form.FormElements[@Model.Index].QuestionType" type="hidden" />
+    <input asp-for="Index" name="Form.FormElements[@Model.Index].Index" type="hidden" />
     <div class="d-flex flex-row align-items-center">
         <h5 class="text-center">Multiple option choice</h5>
         <div class="border-bottom flex-grow-1 ms-2 me-2 border-dark"></div>
@@ -16,9 +17,13 @@
         <div id="checkButtons-@Model.Index">
             @for (int i = 0; i < Model.Options.Count; i++)
             {
+                bool correct = false;
+                List<int>? ints = (List<int>?)Model.Answer;
+                if (ints == null) return;
+                correct = ints.Contains(i);
                 <div class="d-flex flex-row align-items-center">
-                    <input asp-for="CorrectAnswers[i]"
-                    class="form-check-input align-self-middle" type="checkbox" name="Form.FormElements[@Model.Index].CorrectAnswers[@i]">
+                    <input value="@i" @(correct ? "checked" : "")
+                           class="form-check-input align-self-middle" type="checkbox" name="Form.FormElements[@Model.Index].Answer">
                     <input type="text" asp-for="Options[i]" name="Form.FormElements[@Model.Index].Options" class="m-1 form-control w-auto flex-grow-1" />
                     <a class="btn btn-danger" asp-page-handler="RemoveMultiple" asp-route-oindex="@Model.Index" asp-route-iindex="@i">Remove</a>
                 </div>
