@@ -39,7 +39,7 @@ namespace FormCreator.Pages.Public
                 }
 
                 var client = httpClientFactory.CreateClient("FCApiClient");
-                var registrationEndpoint = "api/auth/login";
+                var registrationEndpoint = "api/v1/auth/login";
                 var body = new
                 {
                     login = Input.Login,
@@ -51,10 +51,10 @@ namespace FormCreator.Pages.Public
 
                 var response = await client.PostAsync(registrationEndpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
 
                 if (!response.IsSuccessStatusCode)
                 {
+                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
                     if (response.StatusCode == System.Net.HttpStatusCode.BadRequest && res.error.Contains("deleted"))
                     {
                         TempData["AccountDeletionDate"] = res.stringResponse;
@@ -65,8 +65,10 @@ namespace FormCreator.Pages.Public
 
                     return Page();
                 }
-                HttpContext.Response.Cookies.Append("jwt", res.token);
-                var claims = jwtService.DecryptToken(res.token);
+
+                string token = response.Headers.FirstOrDefault(x => x.Key == "Authorization").Value.FirstOrDefault();
+                HttpContext.Response.Cookies.Append("jwt", token);
+                var claims = jwtService.DecryptToken(token);
                 bool emailVerified = bool.Parse(claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False");
                 string id = claims.FirstOrDefault(x => x.Type == "Id")?.Value ?? Guid.Empty.ToString();
                 if (emailVerified)

@@ -10,114 +10,97 @@ using static FCApi.Controllers.AuthController;
 
 namespace FCApi.Controllers
 {
-    [Route("api/forms")]
+    [Route("api/v{version:apiVersion}/forms")]
     [ApiController]
+    [ApiVersion("1")]
     public class FormController : ControllerBase
     {
-        private readonly IUserService userService;
-        private readonly IJWT jwt;
         private readonly IFormService formService;
-        public FormController(IUserService userService, IJWT jwt, IFormService formService)
+        private readonly ITokenService tokenService;
+
+        public FormController(IFormService formService, ITokenService tokenService)
         {
-            this.userService = userService;
-            this.jwt = jwt;
             this.formService = formService;
+            this.tokenService = tokenService;
         }
         [HttpGet("form")]
-        public IActionResult GetById(string? token, string? fid)
+        [MapToApiVersion("1")]
+        public IActionResult GetById(string? id)
         {
-            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
-            string id = jwt.DecryptTokenID(token);
-            if (!Guid.TryParse(id, out Guid uid))
-                return BadRequest(new { error = "Invalid token" });
-            if (fid == null) return BadRequest(new { error = "No fid." });
-            if (!Guid.TryParse(fid, out Guid ffid))
-                return BadRequest(new { error = "Invalid fid." });
-            var form = formService.GetForm(ffid);
+            tokenService.ValidateRequestToken(HttpContext.Request.Headers.Authorization, out UserModel? user);
+            if (id == null) return BadRequest(new { error = "No form id." });
+            if (!Guid.TryParse(id, out Guid fid))
+                return BadRequest(new { error = "Invalid form id." });
+            var form = formService.GetForm(fid);
             if (form == null) return NotFound(new { error = "Form not found." });
-            var user = userService.GetUser(uid);
-            bool isOwner = form?.OwnerId == user.Id;
+            bool isOwner = user != null && form?.OwnerId == user.Id;
             if (!isOwner)
                 FormModelV2.RemovePrivateProperties(form);
             return Ok(new { formModelResponse = form });
         }
-        [HttpGet("")]
-        public IActionResult GetUserForms(string? uid)
+        [HttpGet("user")]
+        public IActionResult GetUserForms(string? id)
         {
-            if (uid == null) return BadRequest(new { error = "No uid." });
-            if (!Guid.TryParse(uid, out Guid uuid))
-                return BadRequest(new { error = "Invalid uid." });
+            if (id == null) return BadRequest(new { error = "No user id." });
+            if (!Guid.TryParse(id, out Guid uid))
+                return BadRequest(new { error = "Invalid user id." });
+            tokenService.ValidateRequestToken(HttpContext.Request.Headers.Authorization, out UserModel? user);
 
-            var forms = formService.GetFormsByUser(uuid);
-            var user = userService.GetUser(uuid);
-            foreach (var form in forms)
+            var forms = formService.GetFormsByUser(uid);
+            for (int i = 0; i < forms.Count; i++)
             {
-                if (form?.OwnerId != user.Id)
-                    FormModelV2.RemovePrivateProperties(form);
+                if (user == null || forms[i].OwnerId != user.Id)
+                {
+                    if (forms[i].CanBeSearched)
+                        FormModelV2.RemovePrivateProperties(forms[i]);
+                    else
+                        forms.RemoveAt(i);
+                }
             }
             return Ok(new { formsModelResponse = forms });
         }
-        [HttpGet("my")]
-        public IActionResult GetMyForms(string? token)
-        {
-            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
-            string id = jwt.DecryptTokenID(token);
-            if (!Guid.TryParse(id, out Guid uid))
-                return BadRequest(new { error = "Invalid token" });
-            var forms = formService.GetFormsByUser(uid);
-            return Ok(new { formsModelResponse = forms });
-        }
         [HttpPost("create")]
-        public IActionResult CreateForm([FromBody][Required] FormAlterModel model)
+        public IActionResult CreateForm([FromBody][Required] FormModelV2 model)
         {
-            if (string.IsNullOrWhiteSpace(model.Token)) return BadRequest(new { error = "No token" });
-            string id = jwt.DecryptTokenID(model.Token);
-            if (!Guid.TryParse(id, out Guid uid))
-                return BadRequest(new { error = "Invalid token" });
-            var user = userService.GetUser(uid);
-            if (user == null) return NotFound(new { error = "User not found." });
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
 
-            if (model == null && model.Form.FormElements.Any(x => x.QuestionType == QuestionType.None))
-                return NotFound(new { error = "Question type must not be 0" });
+            if (model == null && model.FormElements.Any(x => x.QuestionType == QuestionType.None))
+                return NotFound(new { error = "Question type must not be None" });
             var uforms = formService.GetFormsByUser(user.Id).Count;
             if (uforms >= user.FormsAvailable)
-                return Unauthorized(new { error = $"Ran out of available forms." });
-            model.Form.Id = Guid.NewGuid();
-            model.Form.OwnerId = user.Id;
-            var createdModel = formService.CreateForm(model.Form);
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = $"Ran out of available forms." });
+            model.Id = Guid.NewGuid();
+            model.OwnerId = user.Id;
+            var createdModel = formService.CreateForm(model);
             if (createdModel == null) return NotFound(new { error = "No form questions" });
-            return Ok(new { stringResponse = model?.Form?.Id });
+            return Ok(new { stringResponse = model?.Id });
         }
         [HttpDelete("delete")]
-        public IActionResult DeleteForm(string? token, string? formId)
+        public IActionResult DeleteForm(string? id)
         {
-            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
-            string id = jwt.DecryptTokenID(token);
-            if (!Guid.TryParse(id, out Guid uid))
-                return BadRequest(new { error = "Invalid token" });
-            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No formId" });
-            if (!Guid.TryParse(formId, out Guid fid))
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            if (!Guid.TryParse(id, out Guid fid))
                 return BadRequest(new { error = "Invalid form ID." });
-            var user = userService.GetUser(uid);
-            if (user == null) return NotFound(new { error = "User not found." });
+
             var form = formService.GetForm(fid);
             if (form == null) return NotFound(new { error = "Form not found." });
 
-            if (form.OwnerId != user.Id) return Unauthorized(new { error = "No permissions" });
+            if (form.OwnerId != user.Id) return StatusCode(StatusCodes.Status403Forbidden, new { error = "No permissions" });
             formService.DeleteForm(fid);
             return Ok(new { boolResponse = true, stringResponse = form.Name });
         }
         [HttpDelete("deleteall")]
-        public IActionResult DeleteAll(string? token)
+        public IActionResult DeleteAll()
         {
-            if (string.IsNullOrWhiteSpace(token)) return BadRequest(new { error = "No token" });
-            string id = jwt.DecryptTokenID(token);
-            if (!Guid.TryParse(id, out Guid uid))
-                return BadRequest(new { error = "Invalid token" });
-
-            var user = userService.GetUser(uid);
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
             if (user == null) return NotFound(new { error = "User not found." });
-            var forms = formService.GetFormsByUser(uid);
+            var forms = formService.GetFormsByUser(user.Id);
             int formsDeleted = 0;
             foreach (var form in forms)
             {
@@ -133,20 +116,19 @@ namespace FCApi.Controllers
             return Ok(new { formsModelResponse = formService.SearchForm(q) });
         }
         [HttpPut("edit")]
-        public IActionResult EditForm([Required][FromBody] FormAlterModel newModel)
+        public IActionResult EditForm([Required][FromBody] FormModelV2 newModel)
         {
-            if (string.IsNullOrWhiteSpace(newModel.Token)) return BadRequest(new { error = "No token" });
-            string id = jwt.DecryptTokenID(newModel.Token);
-            if (!Guid.TryParse(id, out Guid uid))
-                return BadRequest(new { error = "Invalid token" });
-            var user = userService.GetUser(uid);
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+
             if (user == null) return Unauthorized(new { error = "User not found." });
-            var form = formService.GetForm(newModel.Form.Id);
-            if (form == null) return NotFound(new { error = $"Form with id ({newModel.Form.Id}) not found." });
+            var form = formService.GetForm(newModel.Id);
+            if (form == null) return NotFound(new { error = "Form not found." });
             if (form.OwnerId != user.Id) return Unauthorized(new { error = "No permissions" });
-            newModel.Form.OwnerId = user.Id;
-            if (form == newModel.Form) return BadRequest(new { error = "Form hasn't changed (BK)" });
-            formService.EditForm(newModel.Form);
+            newModel.OwnerId = user.Id;
+            if (form == newModel) return BadRequest(new { error = "Form hasn't changed." });
+            formService.EditForm(newModel);
             return Ok(new { boolResponse = true });
         }
 

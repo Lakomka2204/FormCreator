@@ -46,22 +46,24 @@ namespace FormCreator.Pages.User
                 };
                 var json = JsonSerializer.Serialize(body);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await client.PutAsync("api/auth/verifyemail", content);
+                var response = await client.PutAsync("api/v1/auth/verifyemail", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
-                if (response.IsSuccessStatusCode || res.error == "Already verified.")
+                if (!response.IsSuccessStatusCode)
                 {
-                    //HttpContext.Response.Cookies.Delete("jwt");
-                    HttpContext.Response.Cookies.Append("jwt", res.token);
-                    return RedirectToPage("/index");
+                    var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
+                    if (res?.error == "Already verified.")
+                    {
+                        string token = response.Headers.GetValues("Authorization").FirstOrDefault();
+                        HttpContext.Response.Cookies.Append("jwt", token);
+                        return RedirectToPage("/index");
+                    }
+                    else
+                    {
+                        TempData["EmailVerificationError"] = res.error;
+                        return Page();
+                    }
                 }
-                else
-                {
-                    TempData["EmailVerificationError"] = res.error;
-                    //ModelState.AddModelError(string.Empty, res.error);
-                    return Page();
-                }
+                return Redirect($"/user/{user.Id}");
             }
             catch (Exception e)
             {

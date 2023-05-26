@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FCApi.Controllers
 {
-    [Route("/")]
+    [Route("api/v{version:apiVersion}/")]
     [ApiController]
+    [ApiVersion("1")]
     public class FCBaseController : ControllerBase
     {
         [HttpGet("")]

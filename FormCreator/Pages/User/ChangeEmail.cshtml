@@ -91,7 +91,7 @@
                 error: function (xhr, textStatus, errorThrown) {
                     sendButton.text("Send");
                     sendButton.prop("disabled", false);
-                    errorText.text("[" + xhr.status + "] " + xhr.responseText);
+                    errorText.text(xhr.responseText);
                 }
             });
         });

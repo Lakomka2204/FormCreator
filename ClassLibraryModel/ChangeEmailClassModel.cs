@@ -11,8 +11,6 @@ namespace ClassLibraryModel
 {
     public class ChangeEmailClassModel
     {
-        [JsonPropertyName("token")]
-        public string Token { get; set; }
         [JsonPropertyName("code")]
         public string Code { get; set; }
         [JsonPropertyName("password")]

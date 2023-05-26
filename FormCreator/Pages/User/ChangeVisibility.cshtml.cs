@@ -30,8 +30,9 @@ namespace FormCreator.Pages.User
                     return Redirect($"/user/{HttpContext.User.Identity.Name}");
                 }
                 string token = HttpContext.Request.Cookies["jwt"];
-                string query = $"api/user/changevisibility?token={token}";
                 var client = httpClientFactory.CreateClient("FCApiClient");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                string query = $"api/v1/user/changevisibility";
                 var response = await client.GetAsync(query);
                 var responseContent = await response.Content.ReadAsStringAsync();
 

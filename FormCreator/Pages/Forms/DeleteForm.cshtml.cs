@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace FormCreator.Pages.Forms
@@ -20,13 +21,10 @@ namespace FormCreator.Pages.Forms
         }
         public async Task<IActionResult> OnGet(string? id)
         {
-            QueryBuilder qb = new QueryBuilder
-            {
-                { "formId", id },
-                { "token", Request.Cookies["jwt"] }
-            };
-            string deleteEndpoint = $"api/forms/delete{qb.ToQueryString()}";
+            string deleteEndpoint = $"api/v1/forms/delete?id={id}";
             using var client = httpClientFactory.CreateClient("FCApiClient");
+            string token = Request.Cookies["jwt"];
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var res = await client.DeleteAsync(deleteEndpoint);
             var resString = await res.Content.ReadAsStringAsync();
             var resp = JsonSerializer.Deserialize<ServerResponse>(resString);
@@ -35,7 +33,7 @@ namespace FormCreator.Pages.Forms
                 TempData["DeletedFormError"] = resp.error;
             }
             TempData["DeletedFormName"] = resp.stringResponse;
-            return Redirect($"/forms/{GetCookieUser()?.Id}");
+            return Redirect($"/forms/user/{GetCookieUser()?.Id}");
         }
     }
 }

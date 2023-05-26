@@ -1,5 +1,6 @@
 ﻿using ClassLibraryModel;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 
 namespace FormCreator
@@ -29,7 +30,8 @@ namespace FormCreator
 
                     if (claims != null)
                     {
-                        endpoint += $"api/auth/verifytoken?token={token}";
+                        endpoint += $"api/v1/auth/verifytoken";
+                        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
                         var response = await httpClient.GetAsync(endpoint);
                         if (response.IsSuccessStatusCode)
                         {

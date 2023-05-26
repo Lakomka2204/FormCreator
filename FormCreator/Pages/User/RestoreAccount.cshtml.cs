@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text;
 using ClassLibraryModel;
 using Microsoft.AspNetCore.Http.Extensions;
+using System.Net.Http.Headers;
 
 namespace FormCreator.Pages.User
 {
@@ -23,12 +24,8 @@ namespace FormCreator.Pages.User
                 if (token == null) return Redirect("/login");
                 using var client = httpClientFactory.CreateClient("FCApiClient");
 
-                QueryBuilder qb = new QueryBuilder
-            {
-                { "token", token },
-            };
-
-                string endpoint = $"api/auth/restoreaccount{qb.ToQueryString()}";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                string endpoint = $"api/v1/auth/restoreaccount";
                 var response = await client.PostAsync(endpoint, null);
                 var resString = await response.Content.ReadAsStringAsync();
                 var res = JsonSerializer.Deserialize<ServerResponse>(resString);
@@ -37,7 +34,8 @@ namespace FormCreator.Pages.User
                     ModelState.AddModelError(string.Empty, res.error);
                     return Page();
                 }
-                HttpContext.Response.Cookies.Append("jwt", res.token);
+                string newToken = response.Headers.FirstOrDefault(x => x.Key == "Authorization").Value.FirstOrDefault();
+                HttpContext.Response.Cookies.Append("jwt", newToken);
                 if (res.userModelResponse.EmailVerified)
                     return Redirect($"/user/{res.userModelResponse.Id}");
                 else

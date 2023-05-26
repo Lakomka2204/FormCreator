@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -22,9 +23,9 @@ namespace FormCreator.Pages.User
             try
             {
                 if (email == null) return Redirect($"/user/{User.Identity.Name}");
+                string token = Request.Cookies["jwt"];
                 ChangeEmailClassModel body = new ChangeEmailClassModel()
                 {
-                    Token = HttpContext.Request.Cookies["jwt"],
                     NewEmail = email,
                     Code = "",
                     EmailId = Guid.Empty,
@@ -32,8 +33,9 @@ namespace FormCreator.Pages.User
                 };
                 var json = JsonSerializer.Serialize(body);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                string endpoint = $"api/user/changeemailforce";
+                string endpoint = $"api/v1/user/changeemailforce";
                 using var client = httpClientFactory.CreateClient("FCApiClient");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var response = await client.PostAsync(endpoint, content);
                 var resString = await response.Content.ReadAsStringAsync();
                 var res = JsonSerializer.Deserialize<ServerResponse>(resString);

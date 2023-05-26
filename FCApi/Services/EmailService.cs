@@ -25,7 +25,6 @@ namespace FCApi.Services
                 SendTime = DateTime.Now,
                 Reason = reason,
             };
-            // code for sending emails
             SendEmail(email, reason, $"Your verification code is {emailCode.Code}. Have a good day.", out _);
             _verificationCodes.InsertOne(emailCode);
             return emailCode.Id;
@@ -79,7 +78,7 @@ namespace FCApi.Services
             var code = _verificationCodes.Find(x => x.UserId == userId)?.ToList()?.LastOrDefault();
             if (code == null) return true;
             var ts = DateTime.UtcNow - code.SendTime;
-            return ts.TotalMinutes > 5;
+            return ts.TotalSeconds > 91;
         }
     }
 }

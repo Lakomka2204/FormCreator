@@ -3,6 +3,7 @@ using FormCreator.Pages.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace FormCreator.Pages.Forms
@@ -26,14 +27,15 @@ namespace FormCreator.Pages.Forms
                 string userEndpoint;
                 if (HttpContext.User.Identity.IsAuthenticated && HttpContext.User.Identity.Name == id)
                 {
-                    userEndpoint = $"api/user/?token={token}";
+                    userEndpoint = $"api/v1/user/self";
                     SelfAccount = true;
                 }
                 else
-                    userEndpoint = $"api/user/{id}";
+                    userEndpoint = $"api/v1/user/{id}";
 
 
                 using var client = httpClientFactory.CreateClient("FCApiClient");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var response = await client.GetAsync(userEndpoint);
                 var responseString = await response.Content.ReadAsStringAsync();
                 var res = JsonSerializer.Deserialize<ServerResponse>(responseString);
@@ -50,18 +52,14 @@ namespace FormCreator.Pages.Forms
                         };
                     }
                     else
+                    {
                         ModelState.AddModelError(string.Empty, res.error);
+                        return Page();
+                    }
                 }
                 else
                     FCUser = res.userModelResponse;
-                // getting forms
-                string formEndpoint;
-                if (SelfAccount)
-                {
-                    formEndpoint = $"api/forms/my?token={token}";
-                }
-                else
-                    formEndpoint = $"api/forms?uid={id}";
+                string formEndpoint = $"api/v1/forms/user?id={id}";
                 var r2 = await client.GetAsync(formEndpoint);
                 string r2String = await r2.Content.ReadAsStringAsync();
                 var r2s = JsonSerializer.Deserialize<ServerResponse>(r2String);

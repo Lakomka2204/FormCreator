@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MongoDB.Bson.IO;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -64,12 +65,13 @@ namespace FormCreator.Pages.User
                     ModelState.AddModelError(nameof(EmailId), att.ErrorMessage);
                     return Page();
                 }
-                string endpoint = "api/user/changeemail1";
+                string endpoint = "api/v1/user/changeemail1";
                 using var client = httpClientFactory.CreateClient("FCApiClient");
+                string token = Request.Cookies["jwt"];
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 ChangeEmailClassModel body = new ChangeEmailClassModel()
                 {
                     Code = OldCode,
-                    Token = HttpContext.Request.Cookies["jwt"],
                     Password = Password,
                     NewEmail = NewEmail,
                     EmailId = Guid.Parse(EmailId),
@@ -79,14 +81,14 @@ namespace FormCreator.Pages.User
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await client.PutAsync(endpoint, content);
                 var resString = await response.Content.ReadAsStringAsync();
-                var res = JsonSerializer.Deserialize<ServerResponse>(resString);
 
                 if (!response.IsSuccessStatusCode)
                 {
+                var res = JsonSerializer.Deserialize<ServerResponse>(resString);
                     ModelState.AddModelError(string.Empty, res.error);
                     return Page();
                 }
-                Response.Cookies.Append("jwt", res.token);
+                Response.Cookies.Append("jwt", response.Headers.GetValues("Authorization").FirstOrDefault());
 
                 //HttpContext.Response.Cookies.Append("jwt", res.token);
                 return Redirect("/verifyemail");

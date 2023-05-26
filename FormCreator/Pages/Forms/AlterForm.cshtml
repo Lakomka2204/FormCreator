@@ -1,4 +1,4 @@
-﻿@page "/edit/{id}/{handler?}"
+﻿@page "/forms/edit/{id}/{handler?}"
 @model FormCreator.Pages.Forms.AlterFormModel
 @using ClassLibraryModel
 @{
@@ -28,33 +28,29 @@
         <div class="container">
             <div class="d-flex justify-content-between m-1">
                 <div class="d-flex">
-                    <a class="btn btn-sm btn-outline-secondary m-1" asp-page="/Forms/UserForms" asp-route-id="@User?.Identity?.Name">Back to my forms</a>
+                    <a class="btn btn-sm btn-outline-secondary m-1" asp-page="/Forms/UserForms" asp-route-id="@User?.Identity?.Name">← Back to my forms</a>
                 </div>
                 <div class="d-flex justify-content-end align-items-center">
-
+                    <div class="form-check form-switch m-1">
+                        <input class="form-check-input" type="checkbox" role="switch" asp-for="Form.CanBeSearched">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Form visibility</label>
+                    </div>
                     <div class="dropdown">
-                        <a class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
+                        <a class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
                             Add Form Element
                         </a>
 
                         <ul class="dropdown-menu" aria-labelledby="addFormElementDropdown">
-                            <li><a asp-page-handler="Add" asp-route-type="ShortTextFormElementModel" class="dropdown-item add-form-element" >Short Text</a></li>
-                            <li><a asp-page-handler="Add" asp-route-type="LongTextFormElementModel" class="dropdown-item add-form-element">Long Text</a></li>
-                            <li><a asp-page-handler="Add" asp-route-type="DateFormElementModel" class="dropdown-item add-form-element">Date</a></li>
-                            <li><a asp-page-handler="Add" asp-route-type="TimeFormElementModel" class="dropdown-item add-form-element">Time</a></li>
-                            <li><a asp-page-handler="Add" asp-route-type="SingleOptionFormElementModel" class="dropdown-item add-form-element">Single Option</a></li>
-                            <li><a asp-page-handler="Add" asp-route-type="MultipleOptionsFormElementModel" class="dropdown-item add-form-element">Multiple Options</a></li>
-                            @*<li><button type="button" class="dropdown-item add-form-element" data-formelementtype="ShortTextFormElementModel">Short Text</button></li>
-                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="LongTextFormElementModel">Long Text</button></li>
-                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="DateFormElementModel">Date</button></li>
-                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="TimeFormElementModel">Time</button></li>
-                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="SingleOptionFormElementModel">Single Option</button></li>
-                            <li><button type="button" class="dropdown-item add-form-element" data-formelementtype="MultipleOptionsFormElementModel">Multiple Options</button></li>*@
+                            <li><a asp-page-handler="Add" asp-route-type="ShortText" class="dropdown-item add-form-element" >Short Text</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="LongText" class="dropdown-item add-form-element">Long Text</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="Date" class="dropdown-item add-form-element">Date</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="Time" class="dropdown-item add-form-element">Time</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="SingleOption" class="dropdown-item add-form-element">Single Option</a></li>
+                            <li><a asp-page-handler="Add" asp-route-type="MultipleOptions" class="dropdown-item add-form-element">Multiple Options</a></li>
                         </ul>
                     </div>
-                    <button type="reset" class="btn btn-sm btn-outline-dark m-1">Revert</button>
                     <a class="btn btn-sm btn-outline-dark m-1" asp-page-handler="Get" asp-route-reset="true">Revert</a>
-                    <button type="submit" class="btn btn-sm btn-primary m-1">Save changes</button>
+                    <button type="submit" class="btn btn-sm btn-success m-1">Save changes</button>
 
                 </div>
             </div>
@@ -74,6 +70,7 @@
                     }
                     @foreach (var formElement in Model?.Form?.FormElements)
                     {
+                        ViewData["fe_last"] = Model.Form.FormElements.Count - 1;
                         switch (formElement.QuestionType)
                         {
                             case QuestionType.ShortText:

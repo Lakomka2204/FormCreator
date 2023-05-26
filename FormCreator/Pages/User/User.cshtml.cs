@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text;
 using ClassLibraryModel;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 
 namespace FormCreator.Pages.User
 {
@@ -32,11 +33,12 @@ namespace FormCreator.Pages.User
                 if (HttpContext.User.Identity.IsAuthenticated && HttpContext.User.Identity.Name == id)
                 {
                     string token = HttpContext.Request.Cookies["jwt"];
-                    registrationEndpoint = $"api/user/?token={token}";
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    registrationEndpoint = $"api/v1/user/self";
                     SelfAccount = true;
                 }
                 else
-                    registrationEndpoint = $"api/user/{id}";
+                    registrationEndpoint = $"api/v1/user/{id}";
 
                 var response = await client.GetAsync(registrationEndpoint);
                 var responseContent = await response.Content.ReadAsStringAsync();

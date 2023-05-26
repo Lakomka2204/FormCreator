@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -76,8 +77,8 @@ namespace FormCreator.Pages.User
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var stringContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                 var client = httpClientFactory.CreateClient("FCApiClient");
-
-                var response = await client.PostAsync("api/user/changepass", stringContent);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = await client.PostAsync("api/v1/user/changepass", stringContent);
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
 

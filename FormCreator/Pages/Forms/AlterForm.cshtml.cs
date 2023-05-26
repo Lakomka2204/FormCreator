@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -36,9 +37,10 @@ namespace FormCreator.Pages.Forms
             }
             var jsonForm = TempData["Form"] as string;
             var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
-            switch (type)
+            QuestionType qType = Enum.Parse<QuestionType>(type);
+            switch (qType)
             {
-                case nameof(ShortTextFormElementModel):
+                case QuestionType.ShortText:
                     form?.FormElements?.Add(
                         new GeneralFormElementModel()
                         {
@@ -48,7 +50,7 @@ namespace FormCreator.Pages.Forms
                             QuestionType = QuestionType.ShortText,
                         });
                     break;
-                case nameof(LongTextFormElementModel):
+                case QuestionType.LongText:
                     form?.FormElements?.Add(
                         new GeneralFormElementModel()
                         {
@@ -58,7 +60,7 @@ namespace FormCreator.Pages.Forms
                             QuestionType = QuestionType.LongText,
                         });
                     break;
-                case nameof(TimeFormElementModel):
+                case QuestionType.Time:
                     form?.FormElements?.Add(
                         new GeneralFormElementModel()
                         {
@@ -68,7 +70,7 @@ namespace FormCreator.Pages.Forms
                             QuestionType = QuestionType.Time,
                         });
                     break;
-                case nameof(DateFormElementModel):
+                case QuestionType.Date:
                     form?.FormElements?.Add(
                         new GeneralFormElementModel()
                         {
@@ -78,7 +80,7 @@ namespace FormCreator.Pages.Forms
                             QuestionType = QuestionType.Date,
                         });
                     break;
-                case nameof(SingleOptionFormElementModel):
+                case QuestionType.SingleOption:
                     form?.FormElements?.Add(
                         new GeneralFormElementModel()
                         {
@@ -93,7 +95,7 @@ namespace FormCreator.Pages.Forms
                             QuestionType = QuestionType.SingleOption,
                         });
                     break;
-                case nameof(MultipleOptionsFormElementModel):
+                case QuestionType.MultipleOptions:
                     form?.FormElements?.Add(
                         new GeneralFormElementModel()
                         {
@@ -112,25 +114,75 @@ namespace FormCreator.Pages.Forms
             }
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset = false });
+            return RedirectToPage("AlterForm", "", new { id, r = false });
         }
-        public IActionResult OnGetAddMultiple(int index, string id)
+        public IActionResult OnGetRemove(string id, int index)
         {
             var jsonForm = TempData["Form"] as string;
             var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
+            form?.FormElements?.RemoveAt(index);
+            RecalculateIndexes(form);
+            Form = form;
+            TempData["Form"] = JsonSerializer.Serialize(form);
+            return RedirectToPage("AlterForm", "", new { id, r = false });
+        }
+        public void RecalculateIndexes(FormModelV2 form)
+        {
+            foreach (var fe in form?.FormElements)
+                fe.Index = form.FormElements.IndexOf(fe);
+        }
+        public IActionResult OnGetMoveUp(string id, int index)
+        {
+            var jsonForm = TempData["Form"] as string;
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            if (index <= 0 || index > jsonForm.Length)
+                return RedirectToPage("AlterForm", "", new { id, r = false });
+            var element = form.FormElements[index];
+            var insertingElement = form.FormElements[index];
+            var elementToReplace = form.FormElements[index - 1];
+            form.FormElements[index - 1] = insertingElement;
+            form.FormElements[index] = elementToReplace;
+            RecalculateIndexes(form);
+            Form = form;
+            TempData["Form"] = JsonSerializer.Serialize(form);
+            return RedirectToPage("AlterForm", "", new { id, r = false });
+        }
+        public IActionResult OnGetMoveDown(string id, int index)
+        {
+            var jsonForm = TempData["Form"] as string;
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            if (index < 0 || index >= jsonForm.Length)
+                return RedirectToPage("AlterForm", "", new { id, r = false });
+            var insertingElement = form.FormElements[index];
+            var elementToReplace = form.FormElements[index + 1];
+            form.FormElements[index + 1] = insertingElement;
+            form.FormElements[index] = elementToReplace;
+            //form.FormElements.Insert(index + 1, insertingElement);
+            //form.FormElements.RemoveAt(index);
+            RecalculateIndexes(form);
+            Form = form;
+            TempData["Form"] = JsonSerializer.Serialize(form);
+            return RedirectToPage("AlterForm", "", new { id, r = false });
+        }
+        public IActionResult OnGetAddMultiple(string id, int index)
+        {
+            var jsonForm = TempData["Form"] as string;
+            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            if (index < 0 || index >= jsonForm.Length)
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             if (form.FormElements[index].QuestionType != QuestionType.MultipleOptions)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             var multiple = form.FormElements[index];
             multiple.Options.Add("New item");
             form.FormElements[index] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset = false });
+            return RedirectToPage("AlterForm", "", new { id, r = false });
         }
         public IActionResult OnGetAddSingle(int index, string id)
         {
@@ -140,19 +192,19 @@ namespace FormCreator.Pages.Forms
             if (index < 0 || index >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of range.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             if (form.FormElements[index].QuestionType != QuestionType.SingleOption)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             var multiple = form.FormElements[index];
             multiple.Options.Add("New item");
             form.FormElements[index] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset = false });
+            return RedirectToPage("AlterForm", "", new { id, r = false });
         }
         public IActionResult OnGetRemoveSingle(string id, int oindex, int iindex)
         {
@@ -161,29 +213,29 @@ namespace FormCreator.Pages.Forms
             if (oindex < 0 || oindex >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of outer range.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             if (form.FormElements[oindex].QuestionType != QuestionType.SingleOption)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             var multiple = form.FormElements[oindex];
             if (iindex < 0 || iindex >= multiple.Options.Count)
             {
                 TempData["UserError"] = "Out of inner range.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             if (multiple.Options.Count <= 2)
             {
                 TempData["UserError"] = "There must be at least two options.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             multiple.Options.RemoveAt(iindex);
             form.FormElements[oindex] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset = false });
+            return RedirectToPage("AlterForm", "", new { id, r = false });
         }
         public IActionResult OnGetRemoveMultiple(string id, int oindex, int iindex)
         {
@@ -192,29 +244,29 @@ namespace FormCreator.Pages.Forms
             if (oindex < 0 || oindex >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of outer range.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             if (form.FormElements[oindex].QuestionType != QuestionType.MultipleOptions)
             {
                 TempData["UserError"] = "Type mismatch.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             var multiple = form.FormElements[oindex];
             if (iindex < 0 || iindex >= multiple.Options.Count)
             {
                 TempData["UserError"] = "Out of inner range.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             if (multiple.Options.Count <= 2)
             {
                 TempData["UserError"] = "There must be at least two options.";
-                return RedirectToPage("AlterForm", "", new { id, reset = false });
+                return RedirectToPage("AlterForm", "", new { id, r = false });
             }
             multiple.Options.RemoveAt(iindex);
             form.FormElements[oindex] = multiple;
             Form = form;
             TempData["Form"] = JsonSerializer.Serialize(form);
-            return RedirectToPage("AlterForm", "", new { id, reset = false });
+            return RedirectToPage("AlterForm", "", new { id, r = false });
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -230,7 +282,9 @@ namespace FormCreator.Pages.Forms
                 return Page();
             }
             using var client = httpClientFactory.CreateClient("FCApiClient");
-            string endpoint = "api/forms/edit";
+            string endpoint = "api/v1/forms/edit";
+            string token = Request.Cookies["jwt"];
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             if (Form.FormElements == null)
                 Form.FormElements = new List<GeneralFormElementModel>(0);
             if (Form.Description == null)
@@ -242,7 +296,7 @@ namespace FormCreator.Pages.Forms
                 switch (Form.FormElements[i].QuestionType)
                 {
                     case QuestionType.None:
-                        throw new Exception("crazy fucker how did you do questiontype.none, go back monke to your cave");
+                        throw new Exception("crazy fucker how did you do questiontype 0, go back monke to your cave");
                     case QuestionType.ShortText:
                     case QuestionType.LongText:
                         Form.FormElements[i].Answer = actualValue.Value[0];
@@ -250,7 +304,7 @@ namespace FormCreator.Pages.Forms
                     case QuestionType.Time:
                         Form.FormElements[i].Answer = TimeSpan.Parse(actualValue.Value[0] ?? "00:00:00").ToString("hh\\:mm\\:ss");
                         break;
-                        case QuestionType.Date:
+                    case QuestionType.Date:
                         Form.FormElements[i].Answer = DateTime.Parse(actualValue.Value[0] ?? DateTime.MinValue.ToString()).ToString("yyyy-MM-dd");
                         break;
                     case QuestionType.SingleOption:
@@ -261,12 +315,8 @@ namespace FormCreator.Pages.Forms
                         break;
                 }
             }
-            var fm = new
-            {
-                form = Form,
-                token = Request.Cookies["jwt"]
-            };
-            var json = JsonSerializer.Serialize(fm);
+
+            var json = JsonSerializer.Serialize(Form);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await client.PutAsync(endpoint, content);
             var resString = await response.Content.ReadAsStringAsync();
@@ -278,11 +328,11 @@ namespace FormCreator.Pages.Forms
             }
             TempData["UserSuccess"] = res.boolResponse ?? false ? $"Form was updated." : "Form remained the same";
             TempData.Remove("Form");
-            return RedirectToPage("AlterForm", "", new { id = Form.Id, reset = true });
+            return RedirectToPage("AlterForm", "", new { id = Form.Id, r = true });
         }
-        public async Task<IActionResult> OnGetAsync(string? id, bool? reset)
+        public async Task<IActionResult> OnGetAsync(string? id, bool? r)
         {
-            if (TempData["Form"] != null && (!reset ?? false))
+            if (TempData["Form"] != null && (!r ?? false))
             {
                 Form = JsonSerializer.Deserialize<FormModelV2>(TempData["Form"].ToString());
                 TempData["Form"] = JsonSerializer.Serialize(Form);
@@ -293,13 +343,11 @@ namespace FormCreator.Pages.Forms
                 TempData["UserError"] = "Invalid ID.";
                 return Page();
             }
-            QueryBuilder qb = new QueryBuilder()
-            {
-                {"token",Request.Cookies["jwt"] },
-                {"fid",id }
-            };
-            string endpoint = "api/forms/form" + qb.ToQueryString();
+
+            string endpoint = $"api/v1/forms/form?id={id}";
             using var client = httpClientFactory.CreateClient("FCApiClient");
+            string token = Request.Cookies["jwt"];
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await client.GetAsync(endpoint);
             var resString = await response.Content.ReadAsStringAsync();
             var res = JsonSerializer.Deserialize<ServerResponse>(resString);
@@ -314,6 +362,7 @@ namespace FormCreator.Pages.Forms
                 return Page();
             }
             Form = res.formModelResponse;
+            Form.FormElements = Form?.FormElements?.Where(x => x.QuestionType != QuestionType.None).ToList();
             TempData["Form"] = JsonSerializer.Serialize(Form);
             return Page();
         }

@@ -67,7 +67,7 @@ namespace FormCreator.Pages.Public
             }
 
             var client = _httpClientFactory.CreateClient("FCApiClient");
-            var registrationEndpoint = "api/auth/register";
+            var registrationEndpoint = "api/v1/auth/register";
             var username = Input.Username ?? Input.Email.Split('@')[0];
             var body = new
             {
@@ -84,21 +84,16 @@ namespace FormCreator.Pages.Public
 
                 var response = await client.PostAsync(registrationEndpoint, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
 
                 if (!response.IsSuccessStatusCode)
                 {
+                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
                     ModelState.AddModelError("", res.error);
 
                     return Page();
                 }
-                HttpContext.Response.Cookies.Append("jwt", res.token);
-
-                //var identity = new ClaimsIdentity("custom");
-
-                //identity.AddClaim(new Claim(ClaimTypes.Authentication, "true"));
-                //identity.AddClaim(new Claim(ClaimTypes.Name, username));
-                //HttpContext.User = new ClaimsPrincipal(identity);
+                string token = response.Headers.FirstOrDefault(x => x.Key == "Authorization").Value.FirstOrDefault();
+                HttpContext.Response.Cookies.Append("jwt", token);
                 return Redirect("/verifyemail");
             }
             catch (HttpRequestException)

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -36,19 +37,18 @@ namespace FormCreator.Pages
                 { "d", inputPassword }
             };
 
-                string verifyPassEndpoint = $"api/auth/pwdcompare{qb.ToQueryString().Value}";
+                string verifyPassEndpoint = $"api/v1/auth/pwdcompare{qb.ToQueryString().Value}";
                 var res = await client.PostAsync(verifyPassEndpoint, null);
                 if (res.IsSuccessStatusCode)
                 {
-                    string sendEmailEndpoint = $"api/user/changeemail0";
+                    string sendEmailEndpoint = $"api/v1/user/changeemail0";
                     ChangeEmailClassModel body = new ChangeEmailClassModel()
                     {
                         Code = "bazinga",
-                        Token = token,
                         Password = inputPassword,
                         NewEmail = "example@mail.com",
                     };
-
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     var json = JsonSerializer.Serialize(body);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
                     var r2 = await client.PutAsync(sendEmailEndpoint, content);

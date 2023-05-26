@@ -24,8 +24,9 @@ namespace FormCreator.Pages.Shared
             var user = new UserModel
             {
                 Email = ss?.FirstOrDefault(x => x.Type == "email")?.Value ?? "No email",
-                Username = ss?.FirstOrDefault(x => x.Type == "sub")?.Value ?? "No username",
-                EmailVerified = bool.Parse(ss?.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False")
+                Username = ss?.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?.Value ?? "No username",
+                Password = ss?.FirstOrDefault(x => x.Type != JwtRegisteredClaimNames.UniqueName)?.Value ?? "No password",
+                EmailVerified = bool.Parse(ss?.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False"),
             };
             string sid = ss?.FirstOrDefault(x => x.Type == "Id")?.Value ?? Guid.Empty.ToString();
             if (!Guid.TryParse(sid, out Guid id))

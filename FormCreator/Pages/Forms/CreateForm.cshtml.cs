@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 using System.Text;
 using FormCreator.Pages.Shared;
+using System.Net.Http.Headers;
 
 namespace FormCreator.Pages.Forms
 {
@@ -21,15 +22,13 @@ namespace FormCreator.Pages.Forms
         public async Task<IActionResult> OnGetAsync()
         {
             using var client = httpClientFactory.CreateClient("FCApiClient");
-            string endpoint = "api/forms/create";
-            FormAlterModel model = new FormAlterModel()
+            string endpoint = "api/v1/forms/create";
+            FormModelV2 model = new FormModelV2()
             {
-                Form = new FormModelV2()
-                {
-                    Name = "New form",
-                    Description = "",
-                    CanBeSearched = false,
-                    FormElements = new List<GeneralFormElementModel>(1)
+                Name = "New form",
+                Description = "",
+                CanBeSearched = false,
+                FormElements = new List<GeneralFormElementModel>(1)
                         {
                             new GeneralFormElementModel()
                             {
@@ -38,9 +37,9 @@ namespace FormCreator.Pages.Forms
                                 QuestionType = QuestionType.ShortText,
                             }
                         },
-                },
-                Token = Request.Cookies["jwt"],
             };
+            string token = Request.Cookies["jwt"];
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await client.PostAsync(endpoint, content);
@@ -49,9 +48,9 @@ namespace FormCreator.Pages.Forms
             if (!response.IsSuccessStatusCode)
             {
                 TempData["UserError"] = res.error;
-                return Redirect($"/forms/{GetCookieUser()?.Id}");
+                return Redirect($"/forms/user/{GetCookieUser()?.Id}");
             }
-            return Redirect($"/edit/{res.stringResponse}");
+            return Redirect($"/forms/edit/{res.stringResponse}");
         }
     }
 }

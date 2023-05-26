@@ -9,8 +9,6 @@ namespace ClassLibraryModel
 {
     public class ChangePasswordModel
     {
-        [JsonPropertyName("token")]
-        public string Token { get; set; }
         [JsonPropertyName("oldPassword")]
         public string OldPassword { get; set; }
         [JsonPropertyName("newPassword")]
