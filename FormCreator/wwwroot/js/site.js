@@ -3,6 +3,7 @@
 
 // Write your JavaScript code.
 function copyText(callerId, elementId) {
+    if (!navigator.clipboard) return console.log("HTTPS PROTOCOL REQUIRED");
     var element = $('#' + elementId);
     var text = element.text();
     navigator.clipboard.writeText(text);

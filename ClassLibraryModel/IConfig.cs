@@ -13,6 +13,7 @@
         string UsersCN { get; set; }
         string VerificationCodesCN { get; set; }
         string FormsCN { get; set; }
+        string SubmissionsCN { get; set; }
     }
     public interface IBackendConfig
     {

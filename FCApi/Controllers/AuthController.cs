@@ -35,7 +35,10 @@ namespace FCApi.Controllers
             if (string.IsNullOrWhiteSpace(pwd))
                 return BadRequest(new { error = "Bad pwd." });
             if (user.Password == pwd)
+            {
+                Response.Headers.Authorization = tokenService.CreateAuthorizationToken(user);
                 return Ok(new { stringResponse = "Pass match." });
+            }
             else
                 return Unauthorized(new { error = "Pass mismatch." });
         }

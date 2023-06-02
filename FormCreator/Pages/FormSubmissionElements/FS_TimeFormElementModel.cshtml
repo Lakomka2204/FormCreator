@@ -1,0 +1,15 @@
+﻿@using ClassLibraryModel
+@model GeneralFormElementModel
+
+<div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+    <input asp-for="QuestionType" name="Submission.Submissions[@Model.Index].QuestionType" type="hidden" />
+    <input asp-for="Index" name="Submission.Submissions[@Model.Index].Index" type="hidden" />
+    <div class="d-flex flex-row align-items-center justify-content-between">
+        <h5 class="text-center">@Model.Question</h5>
+    </div>
+    <div class="border-bottom flex-grow-1 border-dark mb-1"></div>
+    <div class="form-group">
+        <input name="Submission.Submissions[@Model.Index].Answer" type="time" step="1" class="form-control w-auto" placeholder="Enter the time" required/>
+        <span asp-validation-for="Answer" class="text-danger"></span>
+    </div>
+</div>

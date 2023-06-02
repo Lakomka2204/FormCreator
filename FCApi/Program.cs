@@ -25,6 +25,7 @@ builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<IJWT, JWT>();
 builder.Services.AddScoped<ILogger, Logger<string>>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

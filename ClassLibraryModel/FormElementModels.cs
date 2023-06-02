@@ -56,30 +56,20 @@ namespace ClassLibraryModel
             var jsonObject = jsonDoc.RootElement;
 
             var questionType = (QuestionType)jsonObject.GetProperty("questionType").GetInt32();
-
+            var jProp = jsonObject.GetProperty("answer");
             object? answer;
-            switch (questionType)
-            {
-                case QuestionType.None:
-                case QuestionType.ShortText:
-                case QuestionType.LongText:
-                    answer = jsonObject.GetProperty("answer").GetString();
-                    break;
-                case QuestionType.SingleOption:
-                    answer = jsonObject.GetProperty("answer").GetInt32();
-                    break;
-                case QuestionType.MultipleOptions:
-                    answer = JsonSerializer.Deserialize<List<int>>(jsonObject.GetProperty("answer").GetRawText(), options);
-                    break;
-                case QuestionType.Date:
-                    answer = DateTime.Parse(jsonObject.GetProperty("answer").GetString()).ToString("yyyy-MM-dd");
-                    break;
-                case QuestionType.Time:
-                    answer = TimeSpan.Parse(jsonObject.GetProperty("answer").GetString()).ToString("hh\\:mm\\:ss");
-                    break;
-                default:
-                    throw new JsonException($"Unsupported question type: {questionType}");
-            }
+            if (jProp.ValueKind == JsonValueKind.Null)
+                answer = null;
+            else
+                answer = questionType switch
+                {
+                    QuestionType.None or QuestionType.ShortText or QuestionType.LongText => jProp.GetString(),
+                    QuestionType.SingleOption => jProp.GetInt32(),
+                    QuestionType.MultipleOptions => JsonSerializer.Deserialize<List<int>>(jProp.GetRawText(), options),
+                    QuestionType.Date => DateTime.Parse(jProp.GetString() ?? DateTime.MinValue.ToString()).ToString("yyyy-MM-dd"),
+                    QuestionType.Time => TimeSpan.Parse(jProp.GetString() ?? TimeSpan.Zero.ToString()).ToString("hh\\:mm\\:ss"),
+                    _ => throw new JsonException($"Unsupported question type: {questionType}"),
+                };
             var topg = new GeneralFormElementModel();
             topg.Question = jsonObject.GetProperty("question").GetString()!;
             topg.MultiChoice = jsonObject.GetProperty("multiChoice").GetBoolean();

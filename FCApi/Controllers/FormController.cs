@@ -3,6 +3,7 @@ using FCApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Xml.Linq;
@@ -17,11 +18,15 @@ namespace FCApi.Controllers
     {
         private readonly IFormService formService;
         private readonly ITokenService tokenService;
+        private readonly ISubmissionService submissionService;
+        private readonly IUserService userService;
 
-        public FormController(IFormService formService, ITokenService tokenService)
+        public FormController(IFormService formService, ITokenService tokenService, ISubmissionService submissionService, IUserService userService)
         {
             this.formService = formService;
             this.tokenService = tokenService;
+            this.submissionService = submissionService;
+            this.userService = userService;
         }
         [HttpGet("form")]
         [MapToApiVersion("1")]
@@ -35,7 +40,7 @@ namespace FCApi.Controllers
             if (form == null) return NotFound(new { error = "Form not found." });
             bool isOwner = user != null && form?.OwnerId == user.Id;
             if (!isOwner)
-                FormModelV2.RemovePrivateProperties(form);
+                FormModel.RemovePrivateProperties(form);
             return Ok(new { formModelResponse = form });
         }
         [HttpGet("user")]
@@ -45,14 +50,15 @@ namespace FCApi.Controllers
             if (!Guid.TryParse(id, out Guid uid))
                 return BadRequest(new { error = "Invalid user id." });
             tokenService.ValidateRequestToken(HttpContext.Request.Headers.Authorization, out UserModel? user);
-
+            if (user != null && !user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
             var forms = formService.GetFormsByUser(uid);
             for (int i = 0; i < forms.Count; i++)
             {
                 if (user == null || forms[i].OwnerId != user.Id)
                 {
                     if (forms[i].CanBeSearched)
-                        FormModelV2.RemovePrivateProperties(forms[i]);
+                        FormModel.RemovePrivateProperties(forms[i]);
                     else
                         forms.RemoveAt(i);
                 }
@@ -60,12 +66,13 @@ namespace FCApi.Controllers
             return Ok(new { formsModelResponse = forms });
         }
         [HttpPost("create")]
-        public IActionResult CreateForm([FromBody][Required] FormModelV2 model)
+        public IActionResult CreateForm([FromBody][Required] FormModel model)
         {
             TokenService.ValidationState vs;
             if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
-
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
             if (model == null && model.FormElements.Any(x => x.QuestionType == QuestionType.None))
                 return NotFound(new { error = "Question type must not be None" });
             var uforms = formService.GetFormsByUser(user.Id).Count;
@@ -83,6 +90,8 @@ namespace FCApi.Controllers
             TokenService.ValidationState vs;
             if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
             if (!Guid.TryParse(id, out Guid fid))
                 return BadRequest(new { error = "Invalid form ID." });
 
@@ -99,7 +108,8 @@ namespace FCApi.Controllers
             TokenService.ValidationState vs;
             if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
-            if (user == null) return NotFound(new { error = "User not found." });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
             var forms = formService.GetFormsByUser(user.Id);
             int formsDeleted = 0;
             foreach (var form in forms)
@@ -116,13 +126,13 @@ namespace FCApi.Controllers
             return Ok(new { formsModelResponse = formService.SearchForm(q) });
         }
         [HttpPut("edit")]
-        public IActionResult EditForm([Required][FromBody] FormModelV2 newModel)
+        public IActionResult EditForm([Required][FromBody] FormModel newModel)
         {
             TokenService.ValidationState vs;
             if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
-
-            if (user == null) return Unauthorized(new { error = "User not found." });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
             var form = formService.GetForm(newModel.Id);
             if (form == null) return NotFound(new { error = "Form not found." });
             if (form.OwnerId != user.Id) return Unauthorized(new { error = "No permissions" });
@@ -131,6 +141,85 @@ namespace FCApi.Controllers
             formService.EditForm(newModel);
             return Ok(new { boolResponse = true });
         }
+        [HttpPost("submissions/submit")]
+        public IActionResult SubmitForm([Required][FromBody] Submission submission)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
+            if (user.Id != submission.UserId)
+                return BadRequest(new { error = "User ID mismatch." });
+            var form = formService.GetForm(submission.FormId);
+            if (form == null)
+                return BadRequest(new { error = "Form is not found." });
+            if (form.FormElements.Count != submission.Submissions.Count)
+                return BadRequest(new { error = "Submission elements mismatch." });
 
+            for (int i = 0; i < form.FormElements.Count; i++)
+            {
+                var f = form.FormElements[i];
+                var s = submission.Submissions[i];
+                if (f.QuestionType != s.QuestionType)
+                    return BadRequest(new { error = "Submission elements mismatch." });
+            }
+            var retSub = submissionService.Submit(submission);
+            if (retSub == null)
+                return BadRequest(new { error = "No submissions." });
+            return Ok(new { submissionModelResponse = retSub });
+        }
+        [HttpGet("submissions/form")]
+        public IActionResult GetSubmissionsByForm(string? formId)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
+            if (!Guid.TryParse(formId, out Guid fid))
+                return BadRequest(new { error = "Invalid form id." });
+            var form = formService.GetForm(fid);
+            if (form.OwnerId != user.Id)
+                return Unauthorized(new { error = "No permissions." });
+            var submissions = submissionService.GetSubmissionsByForm(form.Id);
+            return Ok(new { submissionsModelResponse = submissions });
+        }
+        [HttpGet("submissions/id")]
+        public IActionResult GetSubmission(string? subId)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
+            if (!Guid.TryParse(subId, out Guid sid))
+                return BadRequest(new { error = "Invalid sub id." });
+            var submission = submissionService.GetSubmission(sid);
+            var form = formService.GetForm(submission.FormId);
+            if (form.OwnerId != user.Id)
+                return Unauthorized(new { error = "No permissions." });
+            if (submission == null)
+                return NotFound(new { error = "Submission not found." });
+            return Ok(new { submissionModelResponse = submission });
+        }
+        [HttpGet("submissions/user")]
+        public IActionResult GetSubmissionsByUser(string? userId)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
+            if (!Guid.TryParse(userId, out Guid uid))
+                return BadRequest(new { error = "Invalid sub id." });
+            var reqUser = userService.GetUser(uid);
+            if (reqUser == null)
+                return NotFound(new { error = "User not found." });
+            if (!reqUser.AnonymousView)
+                return Unauthorized(new { error = "No permissions." });
+            var submissions = submissionService.GetSubmissionsByUser(uid);
+            return Ok(new { submissionsFormModel = submissions });
+        }
     }
 }

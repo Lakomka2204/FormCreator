@@ -38,13 +38,14 @@ namespace FormCreator.Pages.User
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var response = await client.PostAsync(endpoint, content);
                 var resString = await response.Content.ReadAsStringAsync();
-                var res = JsonSerializer.Deserialize<ServerResponse>(resString);
                 if (!response.IsSuccessStatusCode)
                 {
+                    var res = JsonSerializer.Deserialize<ServerResponse>(resString);
                     TempData["UserError"] = res.error;
                     return Redirect($"/user/{User.Identity.Name}");
                 }
-                Response.Cookies.Append("jwt", res.token);
+                string newToken = response.Headers.GetValues("Authorization")?.FirstOrDefault();
+                Response.Cookies.Append("jwt", newToken);
                 return Redirect("/verifyemail");
             }
             catch (HttpRequestException)

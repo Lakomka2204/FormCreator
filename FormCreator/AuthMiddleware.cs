@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace FormCreator
 {
@@ -19,7 +20,6 @@ namespace FormCreator
         {
             try
             {
-
                 string token = context.Request.Cookies["jwt"];
                 using var httpClient = httpClientFactory.CreateClient("FCApiClient");
                 httpClient.Timeout = TimeSpan.FromMilliseconds(500);
@@ -31,13 +31,15 @@ namespace FormCreator
                     if (claims != null)
                     {
                         endpoint += $"api/v1/auth/verifytoken";
-                        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token);
+                        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                         var response = await httpClient.GetAsync(endpoint);
                         if (response.IsSuccessStatusCode)
                         {
-                            string? id = claims.FirstOrDefault(x => x.Type == "Id")?.Value;
-                            bool emailVerified = bool.Parse(claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False");
-
+                            string newToken = response.Headers.GetValues("Authorization").FirstOrDefault();
+                            IEnumerable<Claim> newClaims = jwtService.DecryptToken(newToken);
+                            bool emailVerified = bool.Parse(newClaims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False");
+                            string? id = newClaims.FirstOrDefault(x => x.Type == "Id")?.Value;
+                            context.Response.Cookies.Append("jwt", newToken);
                             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
                             {
                         new Claim(ClaimTypes.Name, id),
@@ -47,6 +49,9 @@ namespace FormCreator
                         }
                         else
                         {
+                            string resString = await response.Content.ReadAsStringAsync();
+                            var res = JsonSerializer.Deserialize<ServerResponse>(resString);
+                            context.Items["UserError"] = res.error;
                             context.Response.Cookies.Delete("jwt");
                             context.User = null;
                         }

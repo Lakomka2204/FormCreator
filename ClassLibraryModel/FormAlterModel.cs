@@ -10,7 +10,7 @@ namespace ClassLibraryModel
     public class FormAlterModel
     {
         [JsonPropertyName("form")]
-        public FormModelV2 Form { get; set; }
+        public FormModel Form { get; set; }
         [JsonPropertyName("token")]
         public string Token { get; set; }
     }

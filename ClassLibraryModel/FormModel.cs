@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace ClassLibraryModel
 {
-    public class FormModelV2
+    public class FormModel
     {
         [Required]
         [BsonId]
@@ -25,16 +25,19 @@ namespace ClassLibraryModel
         [JsonPropertyName("canBeSearched")]
         [BsonElement("can_be_searched")]
         public bool CanBeSearched { get; set; }
+        [JsonPropertyName("oneShotSubmission")]
+        [BsonElement("oneshot_submission")]
+        public bool CanBeSubmittedOnce { get; set; }
         [JsonPropertyName("formElements")]
         [BsonElement("form_elements")]
         public List<GeneralFormElementModel>? FormElements { get; set; }
-        public static void RemovePrivateProperties(FormModelV2? form)
+        public static void RemovePrivateProperties(FormModel? form)
         {
             if (form == null) return;
 
             foreach (var item in form.FormElements)
             {
-                item.QuestionType = QuestionType.None;
+                //item.QuestionType = QuestionType.None;
                 item.Answer = null;
             }
         }

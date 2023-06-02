@@ -23,7 +23,7 @@ namespace FormCreator.Pages.Forms
         {
             using var client = httpClientFactory.CreateClient("FCApiClient");
             string endpoint = "api/v1/forms/create";
-            FormModelV2 model = new FormModelV2()
+            FormModel model = new FormModel()
             {
                 Name = "New form",
                 Description = "",

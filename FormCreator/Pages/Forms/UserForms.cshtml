@@ -44,7 +44,11 @@ else
 
     <div class="card">
         <div class="card-header">
-            <h4 class="card-title">@(Model?.FCUser?.Username)'s forms</h4>
+            <h4 class="card-title">
+                @if(Model?.FCUser?.Id != Guid.Empty && !Model.SelfAccount)
+                {<a asp-page="/User/User" asp-route-id="@Model.FCUser.Id">@(Model?.FCUser?.Username)</a>}
+                else
+                {@(Model?.FCUser?.Username)}'s forms</h4>
         </div>
         @if (Model?.SelfAccount ?? false)
         {
@@ -65,55 +69,61 @@ else
             </h5>
         }
         <div class="card-body">
-            <div class="container mb-2">
-                <div class="row">
-                    <div class="col fw-bold">
-                        Name
-                    </div>
-                    <div class="col fw-bold">
-                        Indexing
-                    </div>
-                    <div class="col fw-bold">
-                        Actions
-                    </div>
-                </div>
-            </div>
-            @if ((Model?.Forms?.Count ?? 0) == 0)
-            {
-                <div class="container mt-3 mx-auto">
-                    <div class="text-center fs-5 mx-auto">
-                        No forms
-                    </div>
-                </div>
-            }
-            else
-                @foreach (var form in Model.Forms)
-                {
-                    <div class="container mb-3">
-                        <div class="row align-items-center">
-                            <div class="col text-secondary">
-                                @form.Name
-                            </div>
-                            <div class="col text-secondary">
-                                @(form.CanBeSearched ? "Yes" : "No")
-                            </div>
-                            <div class="col text-secondary">
-                                <a asp-page="/Forms/ViewForm" asp-route-id="@form.Id" class="btn btn-outline-primary">View</a>
-                                @if (Model.SelfAccount)
-                                {
-                                    <a asp-page="/Forms/AlterForm" asp-route-id="@form.Id" class="btn btn-outline-secondary">Edit</a>
-                                    <button data-bs-toggle="modal" data-bs-target="#deleteFormModal"
-                                            data-bs-id="@form.Id"
-                                            data-bs-name="@form.Name"
-                                            class="btn btn-outline-danger">
-                                        Delete
-                                    </button>
-
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th>Indexing</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if ((Model?.Forms?.Count ?? 0) == 0)
+                    {
+                        <tr>
+                            <td scope="row" colspan="3" class="align-middle">
+                                <div class="container mt-3 mx-auto">
+                                    <div class="text-center fs-5 mx-auto">
+                                        No forms
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                        @foreach (var form in Model.Forms)
+                        {
+                            <tr>
+                                <td class="align-middle">
+                                    <div class="col text-secondary fw-normal">
+                                        @form.Name
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="col text-secondary fw-normal">
+                                        @(form.CanBeSearched ? "Yes" : "No")
+                                    </div>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="col text-secondary">
+                                        <a asp-page="/Forms/ViewForm" asp-route-id="@form.Id" class="btn btn-outline-primary">View</a>
+                                        @if (Model.SelfAccount)
+                                        {
+                                            <a asp-page="/Forms/AlterForm" asp-route-id="@form.Id" class="btn btn-outline-secondary">Edit</a>
+                                            <a asp-page="/Forms/FormSubmissions" asp-route-id="@form.Id" class="btn btn-outline-secondary">Submissions</a>
+                                            <button data-bs-toggle="modal" data-bs-target="#deleteFormModal"
+                                                    data-bs-id="@form.Id"
+                                                    data-bs-name="@form.Name"
+                                                    class="btn btn-outline-danger">
+                                                Delete
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                </tbody>
+            </table>
         </div>
         @if (Model.SelfAccount)
         {

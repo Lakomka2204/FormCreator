@@ -29,7 +29,7 @@ namespace FormCreator.Pages.Public
                 return Redirect($"/user/{User.Identity.Name}");
             else return Page();
         }
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string? ret)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace FormCreator.Pages.Public
 
                 if (!response.IsSuccessStatusCode)
                 {
-                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
+                    var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
                     if (response.StatusCode == System.Net.HttpStatusCode.BadRequest && res.error.Contains("deleted"))
                     {
                         TempData["AccountDeletionDate"] = res.stringResponse;
@@ -72,7 +72,10 @@ namespace FormCreator.Pages.Public
                 bool emailVerified = bool.Parse(claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False");
                 string id = claims.FirstOrDefault(x => x.Type == "Id")?.Value ?? Guid.Empty.ToString();
                 if (emailVerified)
-                    return Redirect($"/user/{id}");
+                    if (!string.IsNullOrEmpty(ret))
+                        return Redirect(ret);
+                    else
+                        return Redirect($"/user/{id}");
                 else
                     return Redirect("/verifyemail");
             }

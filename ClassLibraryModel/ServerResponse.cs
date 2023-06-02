@@ -12,6 +12,8 @@ namespace ClassLibraryModel
         UserModel? userModelResponse,
         string? stringResponse,
         bool? boolResponse,
-        FormModelV2? formModelResponse,
-        List<FormModelV2>? formsModelResponse);
+        FormModel? formModelResponse,
+        List<FormModel>? formsModelResponse,
+        Submission? submissionModelResponse,
+        List<Submission>? submissionsModelResponse);
 }

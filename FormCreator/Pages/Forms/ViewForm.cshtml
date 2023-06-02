@@ -1,12 +1,13 @@
 ﻿@page "/forms/view/{id}"
 @model FormCreator.Pages.Forms.ViewFormModel
+@using ClassLibraryModel;
+
 @{
-    ViewData["Title"] = Model.Form.Name;
+    ViewData["Title"] = Model?.Form?.Name ?? "Form";
 }
 
 @if (ModelState.ErrorCount > 0)
 {
-
     <div asp-validation-summary="ModelOnly" class="text-danger fw-bold"></div>
 }
 @if (TempData["UserError"] != null)
@@ -15,4 +16,67 @@
         <span>@TempData["UserError"]</span>
         <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
     </div>
+}
+@if (Model.IsSubmitted)
+{
+    <div class="alert alert-success alert-dismissible d-flex" role="alert">
+        <span>The form was submitted.</span>
+    </div>
+}
+@if (Model.Form != null)
+{
+    <form method="post" id="mainForm" autocomplete="off">
+        <input type="hidden" name="Submission.UserId" asp-for="User.Identity.Name" readonly>
+        <input type="hidden" name="Submission.FormId" asp-for="Form.Id" readonly>
+        <div class="container">
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title form-control-plaintext p-0 h4">@Model.Form.Name</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Form.Description))
+                {
+                    <span class="card-header bg-white fs-7 form-control-plaintext">@Model.Form.Description</span>
+                }
+                <div class="card-body bg-light" id="formElementsContainer">
+                    @if ((Model?.Form?.FormElements?.Count ?? 0) == 0)
+                    {
+                        <div class="container mt-3 mx-auto">
+                            <div class="text-center fs-5 mx-auto">
+                                No elements
+                            </div>
+                        </div>
+                    }
+                    @foreach (var formElement in Model?.Form?.FormElements)
+                    {
+                        switch (formElement.QuestionType)
+                        {
+                            case QuestionType.ShortText:
+                                <partial name="/Pages/FormSubmissionElements/FS_ShortTextFormElementModel.cshtml" for="@formElement" />
+                                break;
+                            case QuestionType.LongText:
+                                <partial name="/Pages/FormSubmissionElements/FS_LongTextFormElementModel.cshtml" for="@formElement" />
+                                break;
+                            case QuestionType.Date:
+                                <partial name="/Pages/FormSubmissionElements/FS_DateFormElementModel.cshtml" for="@formElement" />
+                                break;
+                            case QuestionType.Time:
+                                <partial name="/Pages/FormSubmissionElements/FS_TimeFormElementModel.cshtml" for="@formElement" />
+                                break;
+                            case QuestionType.SingleOption:
+                                <partial name="/Pages/FormSubmissionElements/FS_SingleOptionFormElementModel.cshtml" for="@formElement" />
+                                break;
+                            case QuestionType.MultipleOptions:
+                                <partial name="/Pages/FormSubmissionElements/FS_MultipleOptionsFormElementModel.cshtml" for="@formElement" />
+                                break;
+                        }
+                    }
+                </div>
+                <div class="card-footer bg-white">
+                    <button class="btn btn-lg btn-outline-primary w-100 mt-1 mb-1" type="submit">Submit</button>
+                    <button class="btn btn-sm btn-outline-danger w-100 mt-1 mb-1" type="reset">Reset</button>
+                </div>
+            </div>
+        </div>
+    </form>
 }

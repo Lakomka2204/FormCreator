@@ -48,14 +48,16 @@ namespace FormCreator.Pages.User
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await client.PutAsync("api/v1/auth/verifyemail", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
+                string? token;
                 if (!response.IsSuccessStatusCode)
                 {
                     var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
                     if (res?.error == "Already verified.")
                     {
-                        string token = response.Headers.GetValues("Authorization").FirstOrDefault();
-                        HttpContext.Response.Cookies.Append("jwt", token);
-                        return RedirectToPage("/index");
+                        token = response.Headers.GetValues("Authorization").FirstOrDefault();
+                        Response.Cookies.Delete("jwt");
+                        Response.Cookies.Append("jwt", token);
+                        return Redirect($"/user/{user.Id}");
                     }
                     else
                     {
@@ -63,6 +65,9 @@ namespace FormCreator.Pages.User
                         return Page();
                     }
                 }
+                token = response.Headers.GetValues("Authorization").FirstOrDefault();
+                Response.Cookies.Delete("jwt");
+                Response.Cookies.Append("jwt", token);
                 return Redirect($"/user/{user.Id}");
             }
             catch (Exception e)
@@ -73,5 +78,4 @@ namespace FormCreator.Pages.User
         }
     }
 
-    public record VerifyEmailRequest(Guid userId, string code);
 }

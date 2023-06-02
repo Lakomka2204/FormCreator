@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.IdentityModel.JsonWebTokens;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -26,7 +27,7 @@ namespace FormCreator.Pages.Forms
             this.httpClientFactory = httpClientFactory;
         }
         [BindProperty]
-        public FormModelV2 Form { get; set; }
+        public FormModel Form { get; set; }
         public IActionResult OnGetAdd(string? type, string id)
         {
 
@@ -36,7 +37,7 @@ namespace FormCreator.Pages.Forms
                 return BadRequest("Invalid parameter");
             }
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             QuestionType qType = Enum.Parse<QuestionType>(type);
             switch (qType)
             {
@@ -119,7 +120,7 @@ namespace FormCreator.Pages.Forms
         public IActionResult OnGetRemove(string id, int index)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
                 return RedirectToPage("AlterForm", "", new { id, r = false });
             form?.FormElements?.RemoveAt(index);
@@ -128,7 +129,7 @@ namespace FormCreator.Pages.Forms
             TempData["Form"] = JsonSerializer.Serialize(form);
             return RedirectToPage("AlterForm", "", new { id, r = false });
         }
-        public void RecalculateIndexes(FormModelV2 form)
+        public void RecalculateIndexes(FormModel form)
         {
             foreach (var fe in form?.FormElements)
                 fe.Index = form.FormElements.IndexOf(fe);
@@ -136,7 +137,7 @@ namespace FormCreator.Pages.Forms
         public IActionResult OnGetMoveUp(string id, int index)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (index <= 0 || index > jsonForm.Length)
                 return RedirectToPage("AlterForm", "", new { id, r = false });
             var element = form.FormElements[index];
@@ -152,7 +153,7 @@ namespace FormCreator.Pages.Forms
         public IActionResult OnGetMoveDown(string id, int index)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
                 return RedirectToPage("AlterForm", "", new { id, r = false });
             var insertingElement = form.FormElements[index];
@@ -169,7 +170,7 @@ namespace FormCreator.Pages.Forms
         public IActionResult OnGetAddMultiple(string id, int index)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
                 return RedirectToPage("AlterForm", "", new { id, r = false });
             if (form.FormElements[index].QuestionType != QuestionType.MultipleOptions)
@@ -188,7 +189,7 @@ namespace FormCreator.Pages.Forms
         {
 
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (index < 0 || index >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of range.";
@@ -209,7 +210,7 @@ namespace FormCreator.Pages.Forms
         public IActionResult OnGetRemoveSingle(string id, int oindex, int iindex)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (oindex < 0 || oindex >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of outer range.";
@@ -240,7 +241,7 @@ namespace FormCreator.Pages.Forms
         public IActionResult OnGetRemoveMultiple(string id, int oindex, int iindex)
         {
             var jsonForm = TempData["Form"] as string;
-            var form = JsonSerializer.Deserialize<FormModelV2>(jsonForm);
+            var form = JsonSerializer.Deserialize<FormModel>(jsonForm);
             if (oindex < 0 || oindex >= jsonForm.Length)
             {
                 TempData["UserError"] = "Out of outer range.";
@@ -334,7 +335,7 @@ namespace FormCreator.Pages.Forms
         {
             if (TempData["Form"] != null && (!r ?? false))
             {
-                Form = JsonSerializer.Deserialize<FormModelV2>(TempData["Form"].ToString());
+                Form = JsonSerializer.Deserialize<FormModel>(TempData["Form"].ToString());
                 TempData["Form"] = JsonSerializer.Serialize(Form);
                 return Page();
             }
@@ -353,12 +354,12 @@ namespace FormCreator.Pages.Forms
             var res = JsonSerializer.Deserialize<ServerResponse>(resString);
             if (!response.IsSuccessStatusCode)
             {
-                TempData["UserError"] = res.error;
+                ModelState.AddModelError(string.Empty, res.error);
                 return Page();
             }
             if (res?.formModelResponse?.OwnerId != GetCookieUser()?.Id)
             {
-                TempData["UserError"] = "No permission.";
+                ModelState.AddModelError(string.Empty, "No permission.");
                 return Page();
             }
             Form = res.formModelResponse;

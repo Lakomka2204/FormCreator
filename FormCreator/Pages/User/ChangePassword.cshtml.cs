@@ -80,7 +80,6 @@ namespace FormCreator.Pages.User
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var response = await client.PostAsync("api/v1/user/changepass", stringContent);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -88,6 +87,7 @@ namespace FormCreator.Pages.User
                 }
                 else
                 {
+                    var res = JsonSerializer.Deserialize<ServerResponse>(responseContent);
                     ErrorMessage = res?.error ?? "An error occurred while changing your password. Please try again.";
                     return Page();
                 }

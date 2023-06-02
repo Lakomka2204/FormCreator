@@ -17,7 +17,7 @@ namespace FormCreator.Pages.Forms
             this.httpClientFactory = httpClientFactory;
         }
         public UserModel? FCUser { get; set; }
-        public List<FormModelV2> Forms { get; set; }
+        public List<FormModel> Forms { get; set; }
         public bool SelfAccount { get; private set; }
         public async Task<IActionResult> OnGetAsync(string? id)
         {
@@ -60,16 +60,17 @@ namespace FormCreator.Pages.Forms
                 else
                     FCUser = res.userModelResponse;
                 string formEndpoint = $"api/v1/forms/user?id={id}";
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var r2 = await client.GetAsync(formEndpoint);
                 string r2String = await r2.Content.ReadAsStringAsync();
                 var r2s = JsonSerializer.Deserialize<ServerResponse>(r2String);
                 if (!r2.IsSuccessStatusCode)
                 {
-                    ModelState.AddModelError(string.Empty, res.error);
+                    ModelState.AddModelError(string.Empty, r2s.error);
                     return Page();
                 }
                 if (r2s.formsModelResponse == null)
-                    Forms = new List<FormModelV2>(0);
+                    Forms = new List<FormModel>(0);
                 else
                     Forms = r2s.formsModelResponse;
                 return Page();

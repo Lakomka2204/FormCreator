@@ -8,6 +8,7 @@
         public string UsersCN { get; set; }
         public string VerificationCodesCN { get; set; }
         public string FormsCN { get; set; }
+        public string SubmissionsCN { get; set; }
     }
     public class JwtConfig : IJWTConfig
     {

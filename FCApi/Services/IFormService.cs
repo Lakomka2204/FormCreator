@@ -4,11 +4,11 @@ namespace FCApi.Services
 {
     public interface IFormService
     {
-        FormModelV2 GetForm(Guid id);
-        List<FormModelV2> GetFormsByUser(Guid uid);
-        FormModelV2? CreateForm(FormModelV2 model);
+        FormModel GetForm(Guid id);
+        List<FormModel> GetFormsByUser(Guid uid);
+        FormModel? CreateForm(FormModel model);
         bool DeleteForm(Guid id);
-        List<FormModelV2> SearchForm(string name);
-        bool EditForm(FormModelV2 model);
+        List<FormModel> SearchForm(string name);
+        bool EditForm(FormModel model);
     }
 }
