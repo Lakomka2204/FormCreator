@@ -14,9 +14,13 @@ namespace ClassLibraryModel
         SingleOption,
         MultipleOptions,
         Date,
-        Time
+        Time,
+        System
     }
-
+    public enum FormDisplayMode
+    {
+        None, View, Edit, Submission
+    }
     [JsonConverter(typeof(GeneralFormElementConverter))]
     public class GeneralFormElementModel
     {

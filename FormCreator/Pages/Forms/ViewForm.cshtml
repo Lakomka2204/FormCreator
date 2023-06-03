@@ -1,6 +1,7 @@
 ﻿@page "/forms/view/{id}"
 @model FormCreator.Pages.Forms.ViewFormModel
-@using ClassLibraryModel;
+@using ClassLibraryModel
+@using FormCreator.Pages.FormElements
 
 @{
     ViewData["Title"] = Model?.Form?.Name ?? "Form";
@@ -49,25 +50,30 @@
                     }
                     @foreach (var formElement in Model?.Form?.FormElements)
                     {
+                        var partialModel = new FormDisplayElementModel()
+                    {
+                        Mode = FormDisplayMode.View,
+                        Element = formElement,
+                    };
                         switch (formElement.QuestionType)
                         {
                             case QuestionType.ShortText:
-                                <partial name="/Pages/FormSubmissionElements/FS_ShortTextFormElementModel.cshtml" for="@formElement" />
+                                <partial name="/Pages/FormElements/ShortElement.cshtml" for="@partialModel" />
                                 break;
                             case QuestionType.LongText:
-                                <partial name="/Pages/FormSubmissionElements/FS_LongTextFormElementModel.cshtml" for="@formElement" />
+                                <partial name="/Pages/FormElements/LongElement.cshtml" for="@partialModel" />
                                 break;
                             case QuestionType.Date:
-                                <partial name="/Pages/FormSubmissionElements/FS_DateFormElementModel.cshtml" for="@formElement" />
+                                <partial name="/Pages/FormElements/DateElement.cshtml" for="@partialModel" />
                                 break;
                             case QuestionType.Time:
-                                <partial name="/Pages/FormSubmissionElements/FS_TimeFormElementModel.cshtml" for="@formElement" />
+                                <partial name="/Pages/FormElements/TimeElement.cshtml" for="@partialModel" />
                                 break;
                             case QuestionType.SingleOption:
-                                <partial name="/Pages/FormSubmissionElements/FS_SingleOptionFormElementModel.cshtml" for="@formElement" />
+                                <partial name="/Pages/FormElements/SingleElement.cshtml" for="@partialModel" />
                                 break;
                             case QuestionType.MultipleOptions:
-                                <partial name="/Pages/FormSubmissionElements/FS_MultipleOptionsFormElementModel.cshtml" for="@formElement" />
+                                <partial name="/Pages/FormElements/MultiElement.cshtml" for="@partialModel" />
                                 break;
                         }
                     }
