@@ -33,3 +33,27 @@ var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggl
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl)
 })
+function dynamicPage(url, changeurl) {
+    $.ajax({
+        url: url,
+        method: 'GET',
+        dataType: 'html',
+        success: function (data) {
+            if (changeurl) {
+                window.history.replaceState({}, '', url);
+            }
+            document.open();
+            document.write(data);
+            document.close();
+            var pageLoadedEvent = new CustomEvent('pageLoaded');
+            window.dispatchEvent(pageLoadedEvent);
+        },
+        error: function (xhr, status, error) {
+            setTimeout(function () {
+                var myModalEl = document.getElementById('serviceUnavailable');
+                var modal = new window.bootstrap.Modal(myModalEl);
+                modal.show();
+            }, 100);
+        }
+    });
+}

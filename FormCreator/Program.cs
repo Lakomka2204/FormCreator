@@ -30,10 +30,19 @@ UriBuilder ub = new()
     Host = builder.Configuration.GetValue<string>("BackendConfig:Hostname"),
     Port = builder.Configuration.GetValue<int>("BackendConfig:Port"),
 };
-builder.Services.AddHttpClient("FCApiClient", client =>
+builder.Services.AddHttpClient("FCApiClient")
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+    };
+}).ConfigureHttpClient(client =>
 {
     client.BaseAddress = ub.Uri;
+
 });
+builder.Services.AddScoped<ILogger, Logger<string>>();
 builder.Services.AddScoped<IJWT, JWT>();
 builder.Services.AddScoped<UserHeaderModel>();
 builder.Services.AddAuthentication("jwt")
@@ -57,11 +66,13 @@ builder.Services.AddAuthentication("jwt")
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<AuthMiddleware>();
+if (builder.Environment.IsProduction())
+    builder.WebHost.UseStaticWebAssets();
 var app = builder.Build();
 app.UseMiddleware<AuthMiddleware>();
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Pub/Error");
     app.UseHsts();
 }
 

@@ -52,17 +52,19 @@
                                     </a>
 
                                     <ul class="dropdown-menu" aria-labelledby="addFormElementDropdown">
-                                        <li><a asp-page-handler="Add" asp-route-type="ShortText" class="dropdown-item add-form-element">Short Text</a></li>
-                                        <li><a asp-page-handler="Add" asp-route-type="LongText" class="dropdown-item add-form-element">Long Text</a></li>
-                                        <li><a asp-page-handler="Add" asp-route-type="Date" class="dropdown-item add-form-element">Date</a></li>
-                                        <li><a asp-page-handler="Add" asp-route-type="Time" class="dropdown-item add-form-element">Time</a></li>
-                                        <li><a asp-page-handler="Add" asp-route-type="SingleOption" class="dropdown-item add-form-element">Single Option</a></li>
-                                        <li><a asp-page-handler="Add" asp-route-type="MultipleOptions" class="dropdown-item add-form-element">Multiple Options</a></li>
+                                        <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="ShortText"})',0)">Short Text</button></li>
+                                        <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="LongText"})',0)">Long Text</button></li>
+                                        <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="Date"})',0)">Date</button></li>
+                                        <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="Time"})',0)">Time</button></li>
+                                        <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="SingleOption"})',0)">Single Option</button></li>
+                                        <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="MultipleOptions"})',0)">Multiple Options</button></li>
+                                        @*<li><a asp-page-handler="Add" asp-route-type="ShortText" class="dropdown-item add-form-element">Short Text</a><x/li>*@
                                     </ul>
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <a class="btn btn-sm btn-outline-dark m-1" asp-page-handler="Get" asp-route-reset="true">Revert</a>
+                                <button type="button" class="btn btn-sm btn-outline-dark m-1" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
+                                @*<a class="btn btn-sm btn-outline-dark m-1" asp-page-handler="Get" asp-route-r="true">Revert</a>*@
                             </li>
                             <li class="nav-item">
                                 <button type="submit" class="btn btn-sm btn-success m-1">Save changes</button>

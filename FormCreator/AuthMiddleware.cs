@@ -10,11 +10,13 @@ namespace FormCreator
     {
         private readonly IJWT jwtService;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly ILogger logger;
 
-        public AuthMiddleware(IJWT jwtService, IHttpClientFactory httpClientFactory)
+        public AuthMiddleware(IJWT jwtService, IHttpClientFactory httpClientFactory, ILogger logger)
         {
             this.jwtService = jwtService;
             this.httpClientFactory = httpClientFactory;
+            this.logger = logger;
         }
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
@@ -22,15 +24,15 @@ namespace FormCreator
             {
                 string token = context.Request.Cookies["jwt"];
                 using var httpClient = httpClientFactory.CreateClient("FCApiClient");
-                httpClient.Timeout = TimeSpan.FromMilliseconds(500);
-                string endpoint = "/";
+                //httpClient.Timeout = TimeSpan.FromMilliseconds(500);
+                string endpoint = "/api/v1";
                 if (!string.IsNullOrEmpty(token))
                 {
                     IEnumerable<Claim> claims = jwtService.DecryptToken(token);
 
                     if (claims != null)
                     {
-                        endpoint += $"api/v1/auth/verifytoken";
+                        endpoint += $"/auth/verifytoken";
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                         var response = await httpClient.GetAsync(endpoint);
                         if (response.IsSuccessStatusCode)
@@ -59,12 +61,14 @@ namespace FormCreator
                 }
                 await httpClient.GetAsync(endpoint);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException e)
             {
+                logger.LogError(e, "Http Exception");
                 context.Items["UserError"] = "Service is unavailable. Please try again later";
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException e)
             {
+                logger.LogError(e,"Task cancelled");
                 context.Items["UserError"] = "Service is unavailable. Please try again later";
             }
             finally

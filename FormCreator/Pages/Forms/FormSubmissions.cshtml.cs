@@ -12,6 +12,7 @@ namespace FormCreator.Pages.Forms
 
         public FormModel Form { get; set; }
         public List<Submission> Submissions { get; set; }
+        public List<UserModel> AssociatedUsers { get; set; }
         public FormSubmissionsModel(IHttpClientFactory httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
@@ -23,7 +24,8 @@ namespace FormCreator.Pages.Forms
             Question
         }
         public Display DisplayType { get; set; }
-        public async Task<IActionResult> OnGet(string? id,string? by)
+        public Guid? SelectedUser { get; set; }
+        public async Task<IActionResult> OnGet(string? id, string? by,string? u)
         {
             string token = Request.Cookies["jwt"];
             using var client = httpClientFactory.CreateClient("FCApiClient");
@@ -50,6 +52,7 @@ namespace FormCreator.Pages.Forms
                 DisplayType = dType;
             else
                 DisplayType = Display.All;
+            
             string formEndpoint = $"/api/v1/forms/form?id={id}";
             using var r2 = await client.GetAsync(formEndpoint);
             var r2S = await r2.Content.ReadAsStringAsync();
@@ -65,6 +68,24 @@ namespace FormCreator.Pages.Forms
                 return Page();
             }
             Form = r2re.formModelResponse;
+            AssociatedUsers ??= new List<UserModel>();
+            string getSubUserEndpoint = "/api/v1/user/";
+            foreach (var sub in Submissions)
+            {
+                if (AssociatedUsers.Any(x => x.Id == sub.UserId))
+                    continue;
+                using var rUser = await client.GetAsync(getSubUserEndpoint + sub.UserId);
+                var r = JsonSerializer.Deserialize<ServerResponse>(await rUser.Content.ReadAsStringAsync());
+                if (rUser.IsSuccessStatusCode)
+                    AssociatedUsers.Add(r.userModelResponse);
+                else
+                    AssociatedUsers.Add(new UserModel() { Username = "Anonymous", Id = sub.UserId });
+            }
+            if (DisplayType == Display.User)
+                if (Guid.TryParse(u, out Guid userId))
+                    SelectedUser = userId;
+                else
+                    SelectedUser = AssociatedUsers.FirstOrDefault()?.Id;
             return Page();
         }
     }

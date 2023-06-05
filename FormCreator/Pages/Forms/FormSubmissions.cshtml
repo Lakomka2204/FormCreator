@@ -1,4 +1,4 @@
-﻿@page "/form/{id}/submissions"
+﻿@page "/forms/{id}/submissions"
 @model FormCreator.Pages.Forms.FormSubmissionsModel
 @using FormCreator.Pages.FormElements
 @using ClassLibraryModel
@@ -12,7 +12,23 @@
         <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
     </div>
 }
+<script>
+    $(document).ready(function () {
+        $('#search-input').on('input', function () {
+            var query = $(this).val().toLowerCase();
 
+            $('.dropdown-menu .dropdown-item').each(function () {
+                var username = $(this).text().toLowerCase();
+                if (username.includes(query)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+
+</script>
 @if (ModelState.ErrorCount > 0)
 {
     <div asp-validation-summary="ModelOnly" class="text-danger fw-bold"></div>
@@ -26,69 +42,192 @@ else
             <span>Sort by </span>
             @foreach (var e in Enum.GetValues<FormSubmissionsModel.Display>())
             {
-                <a asp-page="/Forms/FormSubmissions" asp-route-by="@e" class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")">@e.ToString()</a>
+                <button class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")" type="button" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions",new{by=e})',1)">@e.ToString()</button>
+                @*<a asp-page="/Forms/FormSubmissions" asp-route-by="@e" class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")">@e.ToString()</a>*@
             }
         </div>
-        @switch (Model.DisplayType)
+        @if (Model.Submissions.Count == 0)
         {
-            case FormSubmissionsModel.Display.All:
-                @foreach (var submission in Model.Submissions)
-                {
-                    <div class="card mb-3">
-                        <div class="card-header">ID: <span class="text-muted">@submission.Id</span></div>
-                        <div class="card-body">
-                            <p class="card-text">Submitted at: @submission.SubmissionDate.ToString("R")</p>
-                            <h3 class="card-subtitle mb-2">Answers:</h3>
-                            @foreach (var formElement in Model.Form.FormElements)
-                            {
-                                var formSubmission = submission.Submissions.FirstOrDefault(x => x.Index == formElement.Index && x.QuestionType == formElement.QuestionType);
-                                if (formSubmission == null)
+            <div class="align-middle">
+                <div class="container mt-3 mx-auto">
+                    <div class="text-center fs-5 mx-auto">
+                        No submissions
+                    </div>
+                </div>
+            </div>
+        }
+        else
+            @switch (Model.DisplayType)
+            {
+                case FormSubmissionsModel.Display.All:
+                    @foreach (var submission in Model.Submissions)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header">ID: <span class="text-muted">@submission.Id</span></div>
+                            <div class="card-body">
+                                <p class="card-text">Submitted at: @submission.SubmissionDate.ToString("R")</p>
+                                <h3 class="card-subtitle mb-2">Answers:</h3>
+                                @foreach (var formElement in Model.Form.FormElements)
                                 {
-                                    formSubmission = new ClassLibraryModel.GeneralFormSubmissionModel()
+                                    var formSubmission = submission.Submissions.FirstOrDefault(x => x.Index == formElement.Index && x.QuestionType == formElement.QuestionType);
+                                    if (formSubmission == null)
+                                    {
+                                        formSubmission = new ClassLibraryModel.GeneralFormSubmissionModel()
+                                        {
+                                            QuestionType = ClassLibraryModel.QuestionType.System,
+                                            Answer = "No answers for this question",
+                                            Index = formElement.Index,
+                                        };
+                                    }
+                                    var partialModel = new FormDisplayElementModel()
+                                    {
+                                        Mode = FormDisplayMode.Submission,
+                                        Element = formElement,
+                                        Submission = formSubmission
+                                    };
+                                    switch (formSubmission.QuestionType)
+                                    {
+                                        case QuestionType.ShortText:
+                                            <partial name="/Pages/FormElements/ShortElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.LongText:
+                                            <partial name="/Pages/FormElements/LongElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.Date:
+                                            <partial name="/Pages/FormElements/DateElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.Time:
+                                            <partial name="/Pages/FormElements/TimeElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.SingleOption:
+                                            <partial name="/Pages/FormElements/SingleElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.MultipleOptions:
+                                            <partial name="/Pages/FormElements/MultiElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.System:
+                                            <partial name="/Pages/FormElements/SystemElement.cshtml" for="@partialModel" />
+                                            break;
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    break;
+                case FormSubmissionsModel.Display.User:
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownButton1" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-haspopup="true" aria-expanded="false">
+                            @{
+                                var fUser = Model.AssociatedUsers.FirstOrDefault(x => x.Id == Model.SelectedUser);
+                            }
+                            @if (fUser != null)
+                            {
+                                <span>@fUser?.Username (@fUser?.Id)</span>
+                            }
+                            else
+                            {
+                                <span>Select User</span>
+                            }
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownButton1">
+                            <div class="d-flex flex-column">
+
+                                <input type="text" class="form-control m-2 w-auto" id="search-input" placeholder="Search user">
+                                @foreach (var user in Model.AssociatedUsers)
+                                {
+                                    <button class="dropdown-item" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions", new { by = Model.DisplayType, u = user.Id })', 1)">@user.Username (@user.Id)</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    var userSubmissions = Model.Submissions.Where(x => x.UserId == Model.SelectedUser);
+                    <h4>Submissions by user: @userSubmissions.Count()</h4>
+                    @foreach (var subs in userSubmissions)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header">ID: <span class="text-muted">@subs.Id</span></div>
+                            <div class="card-body">
+                                <p class="card-text">Submitted at: @subs.SubmissionDate.ToString("R")</p>
+                                <h3 class="card-subtitle mb-2">Answers:</h3>
+                                @foreach (var formElement in Model.Form.FormElements)
+                                {
+                                    var formSubmission = subs.Submissions.FirstOrDefault(x => x.Index == formElement.Index && x.QuestionType == formElement.QuestionType);
+                                    if (formSubmission == null)
+                                    {
+                                        formSubmission = new ClassLibraryModel.GeneralFormSubmissionModel()
+                                        {
+                                            QuestionType = ClassLibraryModel.QuestionType.System,
+                                            Answer = "No answers for this question",
+                                            Index = formElement.Index,
+                                        };
+                                    }
+                                    var partialModel = new FormDisplayElementModel()
+                                    {
+                                        Mode = FormDisplayMode.Submission,
+                                        Element = formElement,
+                                        Submission = formSubmission
+                                    };
+                                    switch (formSubmission.QuestionType)
+                                    {
+                                        case QuestionType.ShortText:
+                                            <partial name="/Pages/FormElements/ShortElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.LongText:
+                                            <partial name="/Pages/FormElements/LongElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.Date:
+                                            <partial name="/Pages/FormElements/DateElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.Time:
+                                            <partial name="/Pages/FormElements/TimeElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.SingleOption:
+                                            <partial name="/Pages/FormElements/SingleElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.MultipleOptions:
+                                            <partial name="/Pages/FormElements/MultiElement.cshtml" for="@partialModel" />
+                                            break;
+                                        case QuestionType.System:
+                                            <partial name="/Pages/FormElements/SystemElement.cshtml" for="@partialModel" />
+                                            break;
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    break;
+                case FormSubmissionsModel.Display.Question:
+                    foreach (var question in Model.Form.FormElements)
+                    {
+                        List<Tuple<GeneralFormSubmissionModel?, Guid>> formSubmissions =
+                            Model.Submissions.Select(
+                                x => new Tuple<GeneralFormSubmissionModel?, Guid>(
+                                    x.Submissions.FirstOrDefault(z => z.QuestionType == question.QuestionType && z.Index == question.Index)
+                                    , x.UserId)).ToList();
+                        if (formSubmissions == null || formSubmissions.Count() == 0)
+                        {
+                            formSubmissions = new List<Tuple<GeneralFormSubmissionModel?, Guid>>(1);
+                            formSubmissions.Add(new Tuple<GeneralFormSubmissionModel?, Guid>(
+                            new GeneralFormSubmissionModel()
                                     {
                                         QuestionType = ClassLibraryModel.QuestionType.System,
                                         Answer = "No answers for this question",
-                                        Index = formElement.Index,
+                                        Index = question.Index,
+                                    }, Guid.Empty
+                            ));
+                        }
+                        else
+                        {
+                            var formModel = new FormDisplayElementModel()
+                                    {
+                                        MultiSubmissions = formSubmissions,
+                                        Element = question,
+                                        Mode = FormDisplayMode.SubmissionMultiQuestions,
                                     };
-                                }
-                                var partialModel = new FormDisplayElementModel()
-                                {
-                                    Mode = FormDisplayMode.Submission,
-                                    Element = formElement,
-                                    Submission = formSubmission
-                                };
-                                switch (formSubmission.QuestionType)
-                                {
-                                    case QuestionType.ShortText:
-                                        <partial name="/Pages/FormElements/ShortElement.cshtml" for="@partialModel" />
-                                        break;
-                                    case QuestionType.LongText:
-                                        <partial name="/Pages/FormElements/LongElement.cshtml" for="@partialModel" />
-                                        break;
-                                    case QuestionType.Date:
-                                        <partial name="/Pages/FormElements/DateElement.cshtml" for="@partialModel" />
-                                        break;
-                                    case QuestionType.Time:
-                                        <partial name="/Pages/FormElements/TimeElement.cshtml" for="@partialModel" />
-                                        break;
-                                    case QuestionType.SingleOption:
-                                        <partial name="/Pages/FormElements/SingleElement.cshtml" for="@partialModel" />
-                                        break;
-                                    case QuestionType.MultipleOptions:
-                                        <partial name="/Pages/FormElements/MultiElement.cshtml" for="@partialModel" />
-                                        break;
-                                    case QuestionType.System:
-                                        <partial name="/Pages/FormElements/SystemElement.cshtml" for="@partialModel" />
-                                        break;
-                                }
-                            }
-                        </div>
-                    </div>
-                }
-                break;
-            case FormSubmissionsModel.Display.Question:
-
-                break;
-        }
+                                    // todo displpay partials depending on question type
+                        }
+                    }
+                    break;
+            }
     </div>
 }

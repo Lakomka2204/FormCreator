@@ -19,7 +19,7 @@ namespace ClassLibraryModel
     }
     public enum FormDisplayMode
     {
-        None, View, Edit, Submission
+        None, View, Edit, Submission, SubmissionMultiQuestions
     }
     [JsonConverter(typeof(GeneralFormElementConverter))]
     public class GeneralFormElementModel
