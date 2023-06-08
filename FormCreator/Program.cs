@@ -18,11 +18,11 @@ builder.Services.AddRazorPages();
 builder.Services.Configure<DbConfig>(
     builder.Configuration.GetSection(nameof(DbConfig)));
 builder.Services.AddSingleton<IDbConfig>(sp => sp.GetRequiredService<IOptions<DbConfig>>().Value);
-builder.Configuration["JwtConfig:SecretKey"] = Environment.GetEnvironmentVariable("JWT_SECRET");
+builder.Configuration["JwtConfig:SecretKey"] = builder.Configuration["JWT_SECRET"];
 builder.Services.Configure<JwtConfig>(
     builder.Configuration.GetSection(nameof(JwtConfig)));
 builder.Services.AddSingleton<IJWTConfig>(sp => sp.GetRequiredService<IOptions<JwtConfig>>().Value);
-builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(string.Format(builder.Configuration.GetValue<string>("DbConfig:ConnectionString"),Environment.GetEnvironmentVariable("DB_USR"),Environment.GetEnvironmentVariable("DB_PWD"))));
+builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(string.Format(builder.Configuration.GetValue<string>("DbConfig:ConnectionString"), builder.Configuration["DB_USR"], builder.Configuration["DB_PWD"])));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -42,7 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
                 ValidAudience = builder.Configuration["JwtConfig:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:SecretKey"]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET"]))
             };
         });
 builder.Services.AddAuthorization();
