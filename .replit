@@ -1,4 +1,4 @@
-run = "dotnet watch run --urls=http://0.0.0.0:8080 --project FormCreator/FormCreator.csproj --environment Production --os linux"
+run = "dotnet watch run --urls=http://0.0.0.0:8080 --project FormCreator/FormCreator.csproj --environment Production --os linux --no-launch-profile"
 
 hidden = ["bin", "obj"]
 
