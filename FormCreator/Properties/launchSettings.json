@@ -8,22 +8,13 @@
     }
   },
   "profiles": {
-    "FormCreator Debug": {
+    "FormCreator": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7051",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "FormCreator Release": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "applicationUrl": "https://192.168.31.141:7051;http://192.168.31.141:5001",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
       }
     },
     "IIS Express": {

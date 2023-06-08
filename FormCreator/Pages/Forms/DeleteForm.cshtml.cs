@@ -1,5 +1,6 @@
-using ClassLibraryModel;
+using FormCreator.Models;
 using FormCreator.Pages.Shared;
+using FormCreator.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,8 @@ namespace FormCreator.Pages.Forms
     {
         private readonly IHttpClientFactory httpClientFactory;
 
-        public DeleteFormModel(IHttpClientFactory httpClientFactory,IJWT jwt)
-            :base(jwt)
+        public DeleteFormModel(IHttpClientFactory httpClientFactory, IJWT jwt)
+            : base(jwt)
         {
             this.httpClientFactory = httpClientFactory;
         }
