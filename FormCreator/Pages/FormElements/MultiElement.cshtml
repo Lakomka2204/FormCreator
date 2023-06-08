@@ -1,4 +1,5 @@
 ﻿@using ClassLibraryModel
+@using FormCreator.Pages.Forms
 @model FormCreator.Pages.FormElements.FormDisplayElementModel
 @switch(Model.Mode)
 {
@@ -100,6 +101,41 @@
                             </div>
                         }
                     </div>
+                </div>
+            </div>
+        }
+        break;
+    case FormDisplayMode.SubmissionMultiQuestions:
+        if (Model.MultiSubmissions == null || Model.MultiSubmissions.Count == 0)
+        {
+            <span class="text-danger">Cannot display submissions</span>
+        }
+        else
+        {
+            <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+                <div class="d-flex flex-row align-items-center justify-content-between">
+                    <h5 class="text-center">@Model.Element.Question</h5>
+                </div>
+                <div class="border-bottom flex-grow-1 border-dark mb-1"></div>
+                <div class="form-group">
+                    @{
+                        var answers = Model.MultiSubmissions.Select(x => (List<int>)x.Item1.Answer);
+                        List<int> percentages = new List<int>(Model.Element.Options.Count);
+                        for(int i = 0; i < Model.Element.Options.Count;i++)
+                        {
+                            var ticked = answers.Count(x => x.Contains(i));
+                            percentages.Add(ticked / answers.Count() * 100);
+                        }
+                    }
+                    @for (int i = 0; i < Model.Element.Options.Count; i++)
+                    {
+                        <button type="button" class="form-control w-auto @(percentages[i] == percentages.Max() ? "text-primary" : "text-secondary")">@Model.Element.Options[i] <span class="fw-bold">@percentages[i] %</span></button>
+                        
+                    }
+                    @*@foreach (var sub in Model.MultiSubmissions)
+                    {
+                        <button type="button" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions",new {by=FormSubmissionsModel.Display.User,u=sub.Item2})',1)" class="form-control w-auto">@sub.Item1.Answer</button>
+                    }*@
                 </div>
             </div>
         }

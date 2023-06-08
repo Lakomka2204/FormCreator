@@ -200,10 +200,10 @@ else
                     foreach (var question in Model.Form.FormElements)
                     {
                         List<Tuple<GeneralFormSubmissionModel?, Guid>> formSubmissions =
-                            Model.Submissions.Select(
-                                x => new Tuple<GeneralFormSubmissionModel?, Guid>(
-                                    x.Submissions.FirstOrDefault(z => z.QuestionType == question.QuestionType && z.Index == question.Index)
-                                    , x.UserId)).ToList();
+                        Model.Submissions.Select(
+                        x => new Tuple<GeneralFormSubmissionModel?, Guid>(
+                        x.Submissions.FirstOrDefault(z => z.QuestionType == question.QuestionType && z.Index == question.Index)
+                        , x.UserId)).ToList();
                         if (formSubmissions == null || formSubmissions.Count() == 0)
                         {
                             formSubmissions = new List<Tuple<GeneralFormSubmissionModel?, Guid>>(1);
@@ -216,16 +216,37 @@ else
                                     }, Guid.Empty
                             ));
                         }
-                        else
+                        var formModel = new FormDisplayElementModel()
+                                {
+                                    MultiSubmissions = formSubmissions,
+                                    Element = question,
+                                    Mode = FormDisplayMode.SubmissionMultiQuestions,
+                                };
+                        switch (question.QuestionType)
                         {
-                            var formModel = new FormDisplayElementModel()
-                                    {
-                                        MultiSubmissions = formSubmissions,
-                                        Element = question,
-                                        Mode = FormDisplayMode.SubmissionMultiQuestions,
-                                    };
-                                    // todo displpay partials depending on question type
+                            case QuestionType.ShortText:
+                                <partial name="/Pages/FormElements/ShortElement.cshtml" for="@formModel" />
+                                break;
+                            case QuestionType.LongText:
+                                <partial name="/Pages/FormElements/LongElement.cshtml" for="@formModel" />
+                                break;
+                            case QuestionType.Date:
+                                <partial name="/Pages/FormElements/DateElement.cshtml" for="@formModel" />
+                                break;
+                            case QuestionType.Time:
+                                <partial name="/Pages/FormElements/TimeElement.cshtml" for="@formModel" />
+                                break;
+                            case QuestionType.SingleOption:
+                                <partial name="/Pages/FormElements/SingleElement.cshtml" for="@formModel" />
+                                break;
+                            case QuestionType.MultipleOptions:
+                                <partial name="/Pages/FormElements/MultiElement.cshtml" for="@formModel" />
+                                break;
+                            case QuestionType.System:
+                                <partial name="/Pages/FormElements/SystemElement.cshtml" for="@formModel" />
+                                break;
                         }
+                        // todo displpay partials depending on question type
                     }
                     break;
             }
