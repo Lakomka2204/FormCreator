@@ -71,6 +71,15 @@ namespace FormCreator.Controllers
             Response.Headers.Authorization = tokenService.CreateAuthorizationToken(user);
             return Ok();
         }
+        [HttpPut("skipverification")]
+        public IActionResult SkipEmailVerification([FromBody] EmailVerificationRequestModel noCode)
+        {
+            var user = userService.GetUser(noCode.UserId);
+            user.EmailVerified = true;
+            userService.UpdateUser(noCode.UserId, user);
+            Response.Headers.Authorization = tokenService.CreateAuthorizationToken(user);
+            return Ok();
+        }
         [HttpPut("verifyemail")]
         public IActionResult VerifyEmail([FromBody] EmailVerificationRequestModel code)
         {

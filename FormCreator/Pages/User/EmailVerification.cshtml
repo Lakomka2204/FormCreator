@@ -29,6 +29,12 @@
             <button data-bs-toggle="modal" type="button" data-bs-target="#serviceUnavailable" class="btn btn-primary">Verify Email</button>
         }
     </form>
+    <div class="alert alert-danger mb-0">
+        <form asp-page="/User/SkipVerification" method="post">
+            <input type="hidden" name="id" value="@User.Identity.Name" />
+        SMTP email server isn't configured yet, so it is not possible to receive any emails, so you can just click the <button class="btn fw-bold btn-link m-0 p-0" type="submit">link</button> to verify email.
+            </form>
+    </div>
     @if (TempData["EmailVerificationError"] != null)
     {
         <span class="text-danger fw-bold">@TempData["EmailVerificationError"]</span>

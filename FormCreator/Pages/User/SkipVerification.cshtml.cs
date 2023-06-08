@@ -1,52 +1,32 @@
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc;
-using FormCreator.Pages.Shared;
-using System.Text;
-using System.Text.Json;
-using System.ComponentModel.DataAnnotations;
 using FormCreator.Models;
-using Microsoft.AspNetCore.Authorization;
-using FormCreator.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text.Json;
+using System.Text;
 
 namespace FormCreator.Pages.User
 {
-    [Authorize]
-    public class EmailVerificationModel : UserAPIModel
+    public class SkipVerificationModel : PageModel
     {
         private readonly IHttpClientFactory httpClientFactory;
 
-        [BindProperty]
-        [Display(Name = "Verification Code")]
-        [Range(100000, 999999, ErrorMessage = "Verification Code must be a 6-digit number")]
-        public string VerificationCode { get; set; }
-
-
-        public EmailVerificationModel(IJWT jwtService, IHttpClientFactory httpClientFactory)
-            : base(jwtService)
+        public SkipVerificationModel(IHttpClientFactory httpClientFactory)
         {
             this.httpClientFactory = httpClientFactory;
         }
-
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string id)
         {
             try
             {
-                if (!ModelState.IsValid) return Page();
-                UserModel? user = GetCookieUser();
-                if (user == null)
-                {
-                    TempData["UserError"] = "Cookies are missing, please relog again.";
-                    return RedirectToPage("/login");
-                }
                 var client = httpClientFactory.CreateClient("FCApiClient");
                 var body = new
                 {
-                    userId = user.Id,
-                    code = VerificationCode,
+                    userId = id,
+                    code = "000000"
                 };
                 var json = JsonSerializer.Serialize(body);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await client.PutAsync("api/v1/auth/verifyemail", content);
+                var response = await client.PutAsync("api/v1/auth/skipverification", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
                 string? token;
                 if (!response.IsSuccessStatusCode)
@@ -57,7 +37,7 @@ namespace FormCreator.Pages.User
                         token = response.Headers.GetValues("Authorization").FirstOrDefault();
                         Response.Cookies.Delete("jwt");
                         Response.Cookies.Append("jwt", token);
-                        return Redirect($"/user/{user.Id}");
+                        return Redirect($"/user/{id}");
                     }
                     else
                     {
@@ -68,7 +48,7 @@ namespace FormCreator.Pages.User
                 token = response.Headers.GetValues("Authorization").FirstOrDefault();
                 Response.Cookies.Delete("jwt");
                 Response.Cookies.Append("jwt", token);
-                return Redirect($"/user/{user.Id}");
+                return Redirect($"/user/{id}");
             }
             catch (Exception e)
             {
@@ -77,5 +57,4 @@ namespace FormCreator.Pages.User
             }
         }
     }
-
 }
