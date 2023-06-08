@@ -1,4 +1,5 @@
-﻿using ClassLibraryModel;
+﻿using FormCreator.Models;
+using FormCreator.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -20,6 +21,11 @@ namespace FormCreator
         }
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            if (context.Request.Path.Value.Contains("api/v"))
+            {
+                await next(context);
+                return;
+            }
             try
             {
                 string token = context.Request.Cookies["jwt"];
@@ -68,7 +74,7 @@ namespace FormCreator
             }
             catch (TaskCanceledException e)
             {
-                logger.LogError(e,"Task cancelled");
+                logger.LogError(e, "Task cancelled");
                 context.Items["UserError"] = "Service is unavailable. Please try again later";
             }
             finally

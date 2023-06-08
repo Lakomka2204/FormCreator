@@ -1,7 +1,7 @@
 ﻿@page "/forms/{id}/submissions"
 @model FormCreator.Pages.Forms.FormSubmissionsModel
 @using FormCreator.Pages.FormElements
-@using ClassLibraryModel
+@using FormCreator.Models
 @{
     ViewData["Title"] = $"{Model?.Form?.Name ?? "Form"} submissions";
 }
@@ -72,9 +72,9 @@ else
                                     var formSubmission = submission.Submissions.FirstOrDefault(x => x.Index == formElement.Index && x.QuestionType == formElement.QuestionType);
                                     if (formSubmission == null)
                                     {
-                                        formSubmission = new ClassLibraryModel.GeneralFormSubmissionModel()
+                                        formSubmission = new FormCreator.Models.GeneralFormSubmissionModel()
                                         {
-                                            QuestionType = ClassLibraryModel.QuestionType.System,
+                                            QuestionType = FormCreator.Models.QuestionType.System,
                                             Answer = "No answers for this question",
                                             Index = formElement.Index,
                                         };
@@ -154,9 +154,9 @@ else
                                     var formSubmission = subs.Submissions.FirstOrDefault(x => x.Index == formElement.Index && x.QuestionType == formElement.QuestionType);
                                     if (formSubmission == null)
                                     {
-                                        formSubmission = new ClassLibraryModel.GeneralFormSubmissionModel()
+                                        formSubmission = new FormCreator.Models.GeneralFormSubmissionModel()
                                         {
-                                            QuestionType = ClassLibraryModel.QuestionType.System,
+                                            QuestionType = FormCreator.Models.QuestionType.System,
                                             Answer = "No answers for this question",
                                             Index = formElement.Index,
                                         };
@@ -210,7 +210,7 @@ else
                             formSubmissions.Add(new Tuple<GeneralFormSubmissionModel?, Guid>(
                             new GeneralFormSubmissionModel()
                                     {
-                                        QuestionType = ClassLibraryModel.QuestionType.System,
+                                        QuestionType = FormCreator.Models.QuestionType.System,
                                         Answer = "No answers for this question",
                                         Index = question.Index,
                                     }, Guid.Empty

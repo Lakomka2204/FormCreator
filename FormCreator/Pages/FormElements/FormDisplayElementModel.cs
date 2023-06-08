@@ -1,4 +1,4 @@
-﻿using ClassLibraryModel;
+﻿using FormCreator.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FormCreator.Pages.FormElements

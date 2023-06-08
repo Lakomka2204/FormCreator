@@ -1,30 +1,16 @@
-﻿{
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:7051",
-      "sslPort": 44358
-    }
-  },
+{
   "profiles": {
-    "FormCreator Debug": {
+    "FormCreator": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7051",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "FormCreator Release": {
-      "commandName": "Project",
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DB_PWD": "2gCJwL2UcnIOqZLC",
+        "DB_USR": "fc-server",
+        "JWT_SECRET": "peeepeeepepoooeopwsfjk2805-u34uidojfsdkf0-9q23muc490-83q2mu980ri8qwen9uniopfudsjf poweubre3980rbunw98eruhj weoiufr"
+      },
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "applicationUrl": "https://192.168.31.141:7051;http://192.168.31.141:5001",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
-      }
+      "applicationUrl": "https://localhost:7051"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -32,6 +18,14 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:7051",
+      "sslPort": 44358
     }
   }
 }
