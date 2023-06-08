@@ -13,16 +13,16 @@ using MongoDB.Driver;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.Configure<DbConfig>(
     builder.Configuration.GetSection(nameof(DbConfig)));
 builder.Services.AddSingleton<IDbConfig>(sp => sp.GetRequiredService<IOptions<DbConfig>>().Value);
+builder.Configuration["JwtConfig:SecretKey"] = Environment.GetEnvironmentVariable("JWT_SECRET");
 builder.Services.Configure<JwtConfig>(
     builder.Configuration.GetSection(nameof(JwtConfig)));
 builder.Services.AddSingleton<IJWTConfig>(sp => sp.GetRequiredService<IOptions<JwtConfig>>().Value);
-builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(builder.Configuration.GetValue<string>("DbConfig:ConnectionString")));
+builder.Services.AddSingleton<IMongoClient>(s => new MongoClient(string.Format(builder.Configuration.GetValue<string>("DbConfig:ConnectionString"),Environment.GetEnvironmentVariable("DB_USR"),Environment.GetEnvironmentVariable("DB_PWD"))));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFormService, FormService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();

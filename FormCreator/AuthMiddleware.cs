@@ -30,7 +30,7 @@ namespace FormCreator
             {
                 string token = context.Request.Cookies["jwt"];
                 using var httpClient = httpClientFactory.CreateClient("FCApiClient");
-                httpClient.Timeout = TimeSpan.FromMilliseconds(500);
+                //httpClient.Timeout = TimeSpan.FromMilliseconds(500);
                 string endpoint = "/api/v1";
                 if (!string.IsNullOrEmpty(token))
                 {
