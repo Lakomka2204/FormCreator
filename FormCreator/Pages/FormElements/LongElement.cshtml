@@ -83,10 +83,12 @@
                     <h5 class="text-center">@Model.Element.Question</h5>
                 </div>
                 <div class="border-bottom flex-grow-1 border-dark mb-1"></div>
-                <div class="form-group">
+                <div class="form-group d-flex flex-column gap-1 align-items-start">
                     @foreach (var sub in Model.MultiSubmissions)
                     {
-                        <button type="button" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions",new {by=FormSubmissionsModel.Display.User,u=sub.Item2})',1)" class="form-control w-auto">@sub.Item1.Answer</button>
+                        <a asp-page="/Forms/FormSubmissions" asp-route-by="@FormSubmissionsModel.Display.User" asp-route-u="@sub.Id" class="form-control w-auto text-decoration-none" data-bs-toggle="tooltip"
+                           data-bs-title="Submitted by @sub.Username"
+                           data-bs-placement="right">@sub.Submission.Answer</a>
                     }
                 </div>
             </div>

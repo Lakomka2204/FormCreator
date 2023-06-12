@@ -36,7 +36,7 @@
 else
 {
     <div class="container">
-        <h1>Submissions</h1>
+        <h1>@($"{Model?.Form?.Name ?? "Form"} submissions")</h1>
         <div class="d-flex flex-row gap-2 align-items-center m-2">
 
             <span>Sort by </span>
@@ -199,22 +199,28 @@ else
                 case FormSubmissionsModel.Display.Question:
                     foreach (var question in Model.Form.FormElements)
                     {
-                        List<Tuple<GeneralFormSubmissionModel?, Guid>> formSubmissions =
+                        List<FormDisplayElementModel.MSObject> formSubmissions =
                         Model.Submissions.Select(
-                        x => new Tuple<GeneralFormSubmissionModel?, Guid>(
-                        x.Submissions.FirstOrDefault(z => z.QuestionType == question.QuestionType && z.Index == question.Index)
-                        , x.UserId)).ToList();
+                        x => new FormDisplayElementModel.MSObject
+                                {
+                                    Submission = x.Submissions.FirstOrDefault(z => z.QuestionType == question.QuestionType && z.Index == question.Index),
+                                    Id = x.UserId,
+                                    Username = Model.AssociatedUsers.FirstOrDefault(y => y.Id == x.UserId).Username
+                                }).ToList();
                         if (formSubmissions == null || formSubmissions.Count() == 0)
                         {
-                            formSubmissions = new List<Tuple<GeneralFormSubmissionModel?, Guid>>(1);
-                            formSubmissions.Add(new Tuple<GeneralFormSubmissionModel?, Guid>(
-                            new GeneralFormSubmissionModel()
+                            formSubmissions = new List<FormDisplayElementModel.MSObject>(1);
+                            formSubmissions.Add(new FormDisplayElementModel.MSObject
                                     {
-                                        QuestionType = FormCreator.Models.QuestionType.System,
-                                        Answer = "No answers for this question",
-                                        Index = question.Index,
-                                    }, Guid.Empty
-                            ));
+                                        Submission = new GeneralFormSubmissionModel()
+                                        {
+                                            QuestionType = FormCreator.Models.QuestionType.System,
+                                            Answer = "No answers for this question",
+                                            Index = question.Index,
+                                        },
+                                        Id = Guid.Empty,
+                                        Username = "?"
+                                    });
                         }
                         var formModel = new FormDisplayElementModel()
                                 {

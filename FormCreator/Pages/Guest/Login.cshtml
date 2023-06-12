@@ -1,0 +1,74 @@
+﻿@page "/login"
+@model FormCreator.Pages.Guest.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h1 class="text-center">Login to the account</h1>
+
+<hr />
+
+@{
+    ViewBag.r = HttpContext.Items["UserError"]?.ToString();
+    if (!string.IsNullOrEmpty(ViewBag.r))
+    {
+        <div class="alert alert-danger">@ViewBag.r</div>
+    }
+}
+@if (TempData["AccountRestoreToken"] != null)
+{
+    <script>
+        setTimeout(() => {
+            var myModalEl = document.getElementById('accountRestore');
+            var modal = new window.bootstrap.Modal(myModalEl);
+            modal.show();
+        }, 100);
+    </script>
+}
+<div class="text-center p-1 bg-white">
+    <div class="col-md-6 mx-auto">
+        <form method="post">
+            <div class="form-group m-1 p-2">
+                <input asp-for="Input.Login" class="form-control" />
+                <span asp-validation-for="Input.Login" class="text-danger fs-7"></span>
+            </div>
+            <div class="form-group m-1 p-2">
+                <input asp-for="Input.Password" class="form-control" />
+                <span asp-validation-for="Input.Password" class="text-danger fs-7"></span>
+            </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger fw-bold"></div>
+            <div class="form-group m-1 p-2">
+                @if (ViewBag.r == null)
+                {
+                    <button type="submit" class="btn btn-primary form-control text-center">Login</button>
+                }
+                else
+                {
+                    <button data-bs-toggle="modal" type="button" data-bs-target="#serviceUnavailable" class="btn btn-primary text-center form-control">Login</button>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+@if (TempData["AccountRestoreToken"] != null)
+{
+    <div class="modal fade" id="accountRestore" tabindex="-1" aria-labelledby="accountRestore" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" asp-page="/User/RestoreAccount">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Account planned for deletion.</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <span class="fs-6">Deletion date: @TempData["AccountDeletionDate"]</span>
+                    </div>
+                    <input name="token" type="hidden" value="@TempData["AccountRestoreToken"]" />
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success mx-auto" data-bs-dismiss="modal">Restore account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,8 +1,4 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-function copyText(callerId, elementId) {
+﻿function copyText(elementId) {
     if (!navigator.clipboard) return console.log("HTTPS PROTOCOL REQUIRED");
     var element = $('#' + elementId);
     var text = element.text();
@@ -12,8 +8,8 @@ function copyText(callerId, elementId) {
     element.blur();
     changeClass();
 }
-let timeoutId;
 function changeClass() {
+    let timeoutId;
     if (timeoutId) return;
     var iconEl = document.getElementById("copyIcon");
     iconEl.classList.remove('bi-clipboard2');

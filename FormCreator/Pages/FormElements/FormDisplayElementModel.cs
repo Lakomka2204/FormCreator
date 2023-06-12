@@ -7,8 +7,13 @@ namespace FormCreator.Pages.FormElements
     {
         public GeneralFormElementModel Element { get; set; }
         public GeneralFormSubmissionModel Submission { get; set; }
-        public List<Tuple<GeneralFormSubmissionModel,Guid>> MultiSubmissions { get; set; }
-
+        public List<MSObject> MultiSubmissions { get; set; }
+        public class MSObject
+        {
+            public GeneralFormSubmissionModel Submission { get; set; }
+            public Guid Id { get; set; }
+            public string Username { get; set; }
+        }
         public FormDisplayMode Mode { get; set; }
     }
 }

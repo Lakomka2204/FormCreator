@@ -13,9 +13,9 @@
         }, 100);
     </script>
 }
-<div data-bs-theme="dark" class="d-flex align-items-center text-center flex-column justify-content-center vh-100">
+<div class="d-flex align-items-center text-center flex-column justify-content-center vh-100">
     <h1 class="display-4">Create and share forms quickly.</h1>
-    <a asp-page="/Pub/Register" class="display-6 text-decoration-none border-0 p-3 m-lg-5 rounded-3 btn-primary fw-normal">@(User.Identity.IsAuthenticated ? "Go to your account" : "Create new account")</a>
+    <a asp-page="/Guest/Register" class="btn btn-primary text-decoration-none border-0 p-3 m-lg-5 rounded-3 fw-normal fs-1">@(User.Identity.IsAuthenticated ? "Go to your account" : "Create new account")</a>
 </div>
 @if (TempData["AccountDeletionDate"] != null)
 {   
