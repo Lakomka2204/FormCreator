@@ -254,6 +254,51 @@ else
                         }
                         // todo displpay partials depending on question type
                     }
+                    <div class="modal fade" id="displaySubmission" tabindex="-1" aria-labelledby="displaySubmission" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><strong id="subOptionName">Some</strong> submissions</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="d-flex ps-0 flex-column align-items-start gap-1 list-unstyled"></ul>
+                                </div>
+                                <div class="modal-footer d-flex align-items-end">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        $(document).ready(function () {
+                            const subWindow = $('#displaySubmission');
+
+                            if (subWindow.length) {
+                                const modalBody = subWindow.find('.modal-body ul');
+                                subWindow.on('show.bs.modal', function (event) {
+                                    const button = $(event.relatedTarget);
+
+                                    const title = subWindow.find('.modal-title strong');
+                                    title.text(button.data('bs-option')); //option
+                                    const count = button.data('bs-count');
+                                    const href = location.pathname + "?by=User&u=";
+                                    for (let i = 0; i < count; i++) {
+                                        const username = button.data('bs-username['+i+']'); //username
+                                        const uid = button.data('bs-uid[' + i + ']'); //uid
+                                        const subCount = button.data('bs-count['+i+']'); // count
+                                        const liElement = `<li class="w-100"> <a class="form-control text-decoration-none" href='${href + uid}'>${username} <strong>(${subCount} submission${subCount > 1 ? 's' : ''})</strong></a></li>`;
+                                        modalBody.append(liElement);
+
+                                    }
+                                });
+                                subWindow.on('hidden.bs.modal', function (event) {
+                                    modalBody.empty();
+                                });
+                            }
+                        });
+
+                    </script>
                     break;
             }
     </div>

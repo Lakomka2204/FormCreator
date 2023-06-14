@@ -174,6 +174,8 @@ namespace FormCreator.Controllers
             if (!Guid.TryParse(formId, out Guid fid))
                 return BadRequest(new { error = "Invalid form id." });
             var form = formService.GetForm(fid);
+            if (form == null)
+                return NotFound(new { error = "Not found." });
             if (form.OwnerId != user.Id)
                 return Unauthorized(new { error = "No permissions." });
             var submissions = submissionService.GetSubmissionsByForm(form.Id);

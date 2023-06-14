@@ -125,7 +125,16 @@
                     }
                     @for (int i = 0; i < Model.Element.Options.Count; i++)
                     {
-                        <button type="button" class="form-control w-auto">
+                        var cSubmission = Model.MultiSubmissions.Where(x => ((int)x.Submission.Answer)==i).DistinctBy(x => x.Id).ToArray();
+                        string data = "";
+                        @for (int j = 0; j < cSubmission.Count(); j++)
+                        {
+                            FormDisplayElementModel.MSObject sub = cSubmission[j];
+                            int count = Model.MultiSubmissions.Count(x => x.Id == sub.Id);
+                            data += $"data-bs-uid[{j}]={sub.Id} data-bs-username[{j}]={sub.Username} data-bs-count[{j}]={count} ";
+                        }
+                        <button type="button" class="form-control w-auto" data-bs-toggle="modal" data-bs-target="#displaySubmission"
+                        data-bs-count="@cSubmission.Count()" data-bs-option="@Model.Element.Options[i]" @data>
                             @Model.Element.Options[i] <span class="fw-bold">@percentages[i] %</span>
                         </button>
                     }
