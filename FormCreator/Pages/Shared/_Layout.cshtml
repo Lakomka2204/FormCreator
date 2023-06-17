@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="@(bool.Parse(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(Context.Request.Cookies["local_dark"] ?? "RmFsc2U="))) ? "dark" : "light")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,9 +12,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 </head>
-<body class="bg-light">
+<body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">FormCreator</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="navbarSupportedContent"
@@ -24,10 +24,10 @@
                 <div id="mainNavbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Guest/Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-page="/Guest/Privacy">Privacy</a>
                         </li>
                     </ul>
                     <partial name="userheader"/>
@@ -41,9 +41,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-white">
+    <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - FormCreator - <a asp-area="" asp-page="/Guest/Privacy">Privacy</a>
+            &copy; 2023 - FormCreator - <a asp-area="" asp-page="/Guest/Privacy">Privacy</a> <buttonv class="btn btn-link" onclick="changeMode()">Dark/Light Mode</buttonv>
         </div>
     </footer>
     <div class="modal fade" id="serviceUnavailable" tabindex="-1" aria-labelledby="serviceUnavailable" aria-hidden="true">
@@ -58,7 +58,7 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary mx-auto" data-bs-dismiss="modal">Okay</button>
+                    <span class="btn btn-primary mx-auto" data-bs-dismiss="modal">Okay</span>
                 </div>
             </div>
         </div>

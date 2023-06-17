@@ -8,6 +8,28 @@
     element.blur();
     changeClass();
 }
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+function changeMode() {
+    const mode = getCookie("local_dark");
+    const isDark = atob(mode);
+    document.cookie = "local_dark=" + btoa(isDark == "True" ? "False" : "True") + ";path=/";
+    //location.reload();
+    dynamicPage(location.href.replaceAll(location.origin, ""), 0);
+}
 function changeClass() {
     let timeoutId;
     if (timeoutId) return;
@@ -39,6 +61,7 @@ function dynamicPage(url, changeurl) {
                 window.history.replaceState({}, '', url);
             }
             document.open();
+            document.clear();
             document.write(data);
             document.close();
             var pageLoadedEvent = new CustomEvent('pageLoaded');

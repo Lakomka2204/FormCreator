@@ -144,7 +144,7 @@ namespace FormCreator.Controllers
         public IActionResult RestoreAccount()
         {
             TokenService.ValidationState vs;
-            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.BadPass)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
             if (user.AccountState != AccountState.PendingDeletion)
                 return StatusCode(StatusCodes.Status403Forbidden, new { error = "Not allowed." });

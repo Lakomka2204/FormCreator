@@ -9,8 +9,8 @@
     @if (User?.Identity?.IsAuthenticated ?? false)
     {
         <li class="nav-item">
-            <div class="dropdown" data-bs-theme="light">
-                <a class="nav-link text-dark" type="button" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="dropdown">
+                <a class="nav-link" type="button" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                     Menu
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonLight">
@@ -34,10 +34,10 @@
     else
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-page="/Guest/Login">Login</a>
+            <a class="nav-link" asp-page="/Guest/Login">Login</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-page="/Guest/Register">Sign up</a>
+            <a class="nav-link" asp-page="/Guest/Register">Sign up</a>
         </li>
     }
 </ul>
