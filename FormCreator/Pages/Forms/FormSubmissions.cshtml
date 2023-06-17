@@ -42,8 +42,8 @@ else
             <span>Sort by </span>
             @foreach (var e in Enum.GetValues<FormSubmissionsModel.Display>())
             {
-                <button class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")" type="button" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions",new{by=e})',1)">@e.ToString()</button>
-                @*<a asp-page="/Forms/FormSubmissions" asp-route-by="@e" class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")">@e.ToString()</a>*@
+                @*<button class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")" type="button" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions",new{by=e})',1)">@e.ToString()</button>*@
+                <a asp-page="/Forms/FormSubmissions" asp-route-by="@e" class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")">@e.ToString()</a>
             }
         </div>
         @if (Model.Submissions.Count == 0)
@@ -135,7 +135,8 @@ else
                                 <input type="text" class="form-control m-2 w-auto" id="search-input" placeholder="Search user">
                                 @foreach (var user in Model.AssociatedUsers)
                                 {
-                                    <button class="dropdown-item" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions", new { by = Model.DisplayType, u = user.Id })', 1)">@user.Username (@user.Id)</button>
+                                    <a class="dropdown-item" asp-page="/Forms/FormSubmissions" asp-route-by="@Model.DisplayType" asp-route-u="@user.Id">@user.Username (@user.Id)</a>
+                                    @*<button class="dropdown-item" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions", new { by = Model.DisplayType, u = user.Id })', 1)">@user.Username (@user.Id)</button>*@
                                 }
                             </div>
                         </div>
@@ -283,6 +284,12 @@ else
                                     title.text(button.data('bs-option')); //option
                                     const count = button.data('bs-count');
                                     const href = location.pathname + "?by=User&u=";
+                                    if (count == 0)
+                                    {
+                                        const liEmptyElement = `<li class="w-100 text-center">No choices</li>`;
+                                        modalBody.append(liEmptyElement);
+                                        return;
+                                    }
                                     for (let i = 0; i < count; i++) {
                                         const username = button.data('bs-username['+i+']'); //username
                                         const uid = button.data('bs-uid[' + i + ']'); //uid

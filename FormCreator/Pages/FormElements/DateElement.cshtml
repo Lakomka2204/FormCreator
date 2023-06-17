@@ -4,7 +4,7 @@
 @switch (Model.Mode)
 {
     case FormDisplayMode.Edit:
-        <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+        <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
             <input asp-for="Element.QuestionType" name="Form.FormElements[@Model.Element.Index].QuestionType" type="hidden" />
             <input asp-for="Element.Index" name="Form.FormElements[@Model.Element.Index].Index" type="hidden" />
             <div class="d-flex flex-row align-items-center justify-content-between">
@@ -38,7 +38,7 @@
         </div>
         break;
     case FormDisplayMode.View:
-        <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+        <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
             <input asp-for="Element.QuestionType" name="Submission.Submissions[@Model.Element.Index].QuestionType" type="hidden" />
             <input asp-for="Element.Index" name="Submission.Submissions[@Model.Element.Index].Index" type="hidden" />
             <div class="d-flex flex-row align-items-center justify-content-between">
@@ -57,7 +57,7 @@
         }
         else
         {
-            <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+            <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
                 <div class="d-flex flex-row align-items-center justify-content-between">
                     <h5 class="text-center">@Model.Element.Question</h5>
                 </div>
@@ -75,7 +75,7 @@
         }
         else
         {
-            <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+            <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
                 <div class="d-flex flex-row align-items-center justify-content-between">
                     <h5 class="text-center">@Model.Element.Question</h5>
                 </div>

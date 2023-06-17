@@ -12,13 +12,13 @@
 }
 <h1 class="text-center">Verify Your Email</h1>
 <hr />
-<div class="p-1 text-center bg-white">
+<div class="p-1 text-center">
 
     <p>Please enter the verification code that was sent to your email.</p>
     <form method="post" class="d-flex align-items-baseline justify-content-center">
         <div class="form-group">
             <label asp-for="VerificationCode"></label>
-            <input asp-for="VerificationCode" class="form-control-sm border-1 m-1" autocomplete="off" value="" />
+            <input asp-for="VerificationCode" class="form-control d-inline-block w-auto border-1 m-1" autocomplete="off" value="" />
         </div>
         @if (ViewBag.r == null)
         {

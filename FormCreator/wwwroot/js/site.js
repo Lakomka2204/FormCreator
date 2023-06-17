@@ -60,10 +60,11 @@ function dynamicPage(url, changeurl) {
             if (changeurl) {
                 window.history.replaceState({}, '', url);
             }
+            document.body.style.display = 'none';
             document.open();
-            document.clear();
             document.write(data);
             document.close();
+            document.body.style.display = 'block';
             var pageLoadedEvent = new CustomEvent('pageLoaded');
             window.dispatchEvent(pageLoadedEvent);
         },

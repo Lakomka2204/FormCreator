@@ -3,7 +3,7 @@
 @switch(Model.Mode)
 {
     case FormDisplayMode.Edit:
-        <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1" id="muop-@Model.Element.Index">
+        <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1" id="muop-@Model.Element.Index">
             <input asp-for="Element.QuestionType" name="Form.FormElements[@Model.Element.Index].QuestionType" type="hidden" />
             <input asp-for="Element.Index" name="Form.FormElements[@Model.Element.Index].Index" type="hidden" />
             <div class="d-flex flex-row align-items-center justify-content-between">
@@ -11,17 +11,18 @@
                 <div class="d-flex flex-row align-items-center">
                     @if (Model.Element.Index != 0)
                     {
-                        <a class="btn" asp-page-handler="MoveUp" asp-route-index="@Model.Element.Index">
+                        <button type="button" class="btn" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","MoveUp",new{index=Model.Element.Index})')">
                             <i class="bi bi-caret-up-fill text-black"></i>
-                        </a>
+                        </button>
                     }
                     @if (ViewData["fe_last"] != null && Model.Element.Index != (int)ViewData["fe_last"]!)
                     {
-                        <a class="btn" asp-page-handler="MoveDown" asp-route-index="@Model.Element.Index">
+
+                        <button type="button" class="btn" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","MoveDown",new{index=Model.Element.Index})')">
                             <i class="bi bi-caret-down-fill text-black"></i>
-                        </a>
+                        </button>
                     }
-                    <a class="btn btn-close" asp-page-handler="Remove" asp-route-index="@Model.Element.Index"></a>
+                    <button type="button" class="btn btn-close" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Remove",new{index=Model.Element.Index})')"></button>
                 </div>
             </div>
             <div class="border-bottom flex-grow-1 border-dark"></div>
@@ -41,7 +42,8 @@
                             @(answer == i ? "checked" : "")
                                    value="@i" required>
                             <input type="text" asp-for="Element.Options[i]" name="Form.FormElements[@Model.Element.Index].Options[@i]" class="m-1 form-control w-auto flex-grow-1" />
-                            <a class="btn btn-danger" asp-page-handler="RemoveSingle" asp-route-oindex="@Model.Element.Index" asp-route-iindex="@i">Remove</a>
+                            <button class="btn btn-danger" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","RemoveSingle",new{oindex=@Model.Element.Index,iindex=i})',0)">Remove</button>
+                            @*<a class="btn btn-danger" asp-page-handler="RemoveSingle" asp-route-oindex="@Model.Element.Index" asp-route-iindex="@i">Remove</a>*@
                         </div>
                     }
                 </div>
@@ -52,7 +54,7 @@
         </div>
         break;
     case FormDisplayMode.View:
-        <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1" id="muop-@Model.Element.Index">
+        <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1" id="muop-@Model.Element.Index">
             <input asp-for="Element.QuestionType" name="Submission.Submissions[@Model.Element.Index].QuestionType" type="hidden" />
             <input asp-for="Element.Index" name="Submission.Submissions[@Model.Element.Index].Index" type="hidden" />
             <div class="d-flex flex-row align-items-center justify-content-between">
@@ -80,7 +82,7 @@
         }
         else
         {
-            <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+            <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
                 <div class="d-flex flex-row align-items-center justify-content-between">
                     <h5 class="text-center">@Model.Element.Question</h5>
                 </div>
@@ -108,7 +110,7 @@
         }
         else
         {
-            <div class="bg-white rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
+            <div class="rounded-1 border-1 border-secondary border d-flex flex-column p-3 m-1">
                 <div class="d-flex flex-row align-items-center justify-content-between">
                     <h5 class="text-center">@Model.Element.Question</h5>
                 </div>

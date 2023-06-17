@@ -63,7 +63,7 @@
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <button type="button" class="btn btn-sm btn-outline-dark m-1" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
+                                <button type="button" class="btn btn-sm btn-secondary m-1" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
                                 @*<a class="btn btn-sm btn-outline-dark m-1" asp-page-handler="Get" asp-route-r="true">Revert</a>*@
                             </li>
                             <li class="nav-item">
@@ -80,8 +80,8 @@
                 <div class="card-header">
                     <input class="card-title form-control-plaintext p-0 h4 " asp-for="Form.Name" />
                 </div>
-                <input class="card-header bg-white fs-7 form-control-plaintext" type="text" asp-for="Form.Description" placeholder="Description" />
-                <div class="card-body bg-light" id="formElementsContainer">
+                <input class="card-header fs-7 form-control-plaintext" type="text" asp-for="Form.Description" placeholder="Description" />
+                <div class="card-body" id="formElementsContainer">
                     @if ((Model?.Form?.FormElements?.Count ?? 0) == 0)
                     {
                         <div class="container mt-3 mx-auto">
