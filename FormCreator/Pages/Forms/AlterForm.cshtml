@@ -40,17 +40,13 @@
                     <div id="subnavbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
                         <ul class="navbar-nav flex-grow-1 align-items-center">
                             <li class="nav-item">
-                                <div class="form-check form-switch m-1 align-items-center">
-                                    <input id="flexSwitchCheckDefault" class="form-check-input" type="checkbox" role="switch" asp-for="Form.CanBeSearched">
-                                    <label class="form-check-label user-select-none" for="flexSwitchCheckDefault">Form visibility</label>
-                                </div>
+                                <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#formSettings">Settings</button>
                             </li>
                             <li class="nav-item">
                                 <div class="dropdown">
                                     <a class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
                                         Add Form Element
                                     </a>
-
                                     <ul class="dropdown-menu" aria-labelledby="addFormElementDropdown">
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="ShortText"})',0)">Short Text</button></li>
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="LongText"})',0)">Long Text</button></li>
@@ -58,13 +54,11 @@
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="Time"})',0)">Time</button></li>
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="SingleOption"})',0)">Single Option</button></li>
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="MultipleOptions"})',0)">Multiple Options</button></li>
-                                        @*<li><a asp-page-handler="Add" asp-route-type="ShortText" class="dropdown-item add-form-element">Short Text</a><x/li>*@
                                     </ul>
                                 </div>
                             </li>
                             <li class="nav-item">
                                 <button type="button" class="btn btn-sm btn-secondary m-1" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
-                                @*<a class="btn btn-sm btn-outline-dark m-1" asp-page-handler="Get" asp-route-r="true">Revert</a>*@
                             </li>
                             <li class="nav-item">
                                 <button type="submit" class="btn btn-sm btn-success m-1">Save changes</button>
@@ -120,6 +114,29 @@
                                 break;
                         }
                     }
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="formSettings" tabindex="-1" aria-labelledby="formSettings" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Form settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-check form-switch m-1 align-items-center">
+                            <input id="fs_switchcbsub" class="form-check-input" type="checkbox" role="switch" asp-for="Form.CanBeSearched">
+                            <label class="form-check-label user-select-none" for="fs_switchcbsub">Form visibility</label>
+                        </div>
+                        <div class="form-check form-switch m-1 align-items-center">
+                            <input id="fs_switchcbsero" class="form-check-input" type="checkbox" role="switch" asp-for="Form.CanBeSubmittedOnce">
+                            <label class="form-check-label user-select-none" for="fs_switchcbsero">One submission per user</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <span class="btn btn-primary mx-auto" data-bs-dismiss="modal">Okay</span>
+                    </div>
                 </div>
             </div>
         </div>
