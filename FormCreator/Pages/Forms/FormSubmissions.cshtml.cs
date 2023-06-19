@@ -1,4 +1,5 @@
 using FormCreator.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net.Http.Headers;
@@ -6,6 +7,7 @@ using System.Text.Json;
 
 namespace FormCreator.Pages.Forms
 {
+    [Authorize]
     public class FormSubmissionsModel : PageModel
     {
         private readonly IHttpClientFactory httpClientFactory;

@@ -67,6 +67,9 @@ namespace FormCreator.Services
                 string? bearer = authorization.FirstOrDefault();
                 if (bearer == null)
                     return ValidationState.InvalidAuth;
+                string[] authStr = bearer.Split(' ');
+                if (authStr.Length < 2)
+                    return ValidationState.NoAuth;
                 string token = bearer.Split(' ')[1];
                 var localUserClaims = jwt.DecryptToken(token);
                 if (localUserClaims == null) return ValidationState.TokenExpired;

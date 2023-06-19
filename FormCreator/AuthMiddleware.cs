@@ -60,6 +60,7 @@ namespace FormCreator
                             string resString = await response.Content.ReadAsStringAsync();
                             var res = JsonSerializer.Deserialize<ServerResponse>(resString);
                             context.Items["UserError"] = res.error;
+
                             context.Response.Cookies.Delete("jwt");
                             context.User = null;
                         }
