@@ -46,6 +46,9 @@ namespace FormCreator.Models
         [JsonPropertyName("answer")]
         [BsonElement("answer")]
         public object? Answer { get; set; }
+        [JsonPropertyName("isRequired")]
+        [BsonElement("is_required")]
+        public bool IsRequired { get; set; }
     }
     public class GeneralFormElementConverter : JsonConverter<GeneralFormElementModel>
     {
@@ -78,6 +81,7 @@ namespace FormCreator.Models
             topg.Question = jsonObject.GetProperty("question").GetString()!;
             topg.MultiChoice = jsonObject.GetProperty("multiChoice").GetBoolean();
             topg.Index = jsonObject.GetProperty("index").GetInt32();
+            topg.IsRequired = jsonObject.GetProperty("isRequired").GetBoolean();
             topg.QuestionType = questionType;
             topg.Options = JsonSerializer.Deserialize<List<string>>(jsonObject.GetProperty("options").GetRawText(), options);
             topg.Answer = answer;
@@ -90,6 +94,7 @@ namespace FormCreator.Models
             writer.WriteString("question", value.Question);
             writer.WriteNumber("questionType", (int)value.QuestionType);
             writer.WriteNumber("index", value.Index);
+            writer.WriteBoolean("isRequired", value.IsRequired);
             writer.WritePropertyName("options");
             writer.WriteStartArray();
             if (value.Options != null)

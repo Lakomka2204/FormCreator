@@ -40,9 +40,6 @@
                     <div id="subnavbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
                         <ul class="navbar-nav flex-grow-1 align-items-center">
                             <li class="nav-item">
-                                <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#formSettings">Settings</button>
-                            </li>
-                            <li class="nav-item">
                                 <div class="dropdown">
                                     <a class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
                                         Add Form Element
@@ -56,6 +53,9 @@
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="MultipleOptions"})',0)">Multiple Options</button></li>
                                     </ul>
                                 </div>
+                            </li>
+                            <li class="nav-item">
+                                <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#formSettings">Settings</button>
                             </li>
                             <li class="nav-item">
                                 <button type="button" class="btn btn-sm btn-secondary m-1" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>

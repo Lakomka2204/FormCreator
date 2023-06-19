@@ -46,7 +46,7 @@ namespace FormCreator
                             string newToken = response.Headers.GetValues("Authorization").FirstOrDefault();
                             IEnumerable<Claim> newClaims = jwtService.DecryptToken(newToken);
                             bool emailVerified = bool.Parse(newClaims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Gender)?.Value ?? "False");
-                            string? id = newClaims.FirstOrDefault(x => x.Type == "Id")?.Value;
+                            string id = newClaims.FirstOrDefault(x => x.Type == "Id")?.Value;
                             context.Response.Cookies.Append("jwt", newToken);
                             context.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
                             {

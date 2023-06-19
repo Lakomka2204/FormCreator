@@ -19,13 +19,17 @@
             }
             <div class="alert alert-danger">SMTP email server isn't configured yet, so it is not possible to receive any emails.</div>
             <form method="post">
-                <div class="form-group m-1 p-2">
+                <div class="input-group m-1 p-2">
+                    <input asp-for="Password" type="password" class="form-control" />
+                    <button type="button" class="btn btn-secondary" id="sendOld">Send</button>
+                </div>
+                    <span asp-validation-for="Password" class="text-danger fs-7" id="sendOldError"></span>
+                @*<div class="form-group m-1 p-2">
                     <div class="form-control d-flex flex-row">
                         <input asp-for="Password" type="password" class="border-0 justify-content-between w-100" />
                         <button type="button" class="btn btn-link text-decoration-none text-nowrap" id="sendOld">Send</button>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger fs-7" id="sendOldError"></span>
-                </div>
+                </div>*@
                 <div class="form-group m-1 p-2">
                     <input asp-for="OldCode" class="form-control" id="oldCode" type="number" disabled />
                     <span asp-validation-for="OldCode" class="text-danger fs-7"></span>

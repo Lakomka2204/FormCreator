@@ -1,5 +1,8 @@
-﻿<!DOCTYPE html>
-<html lang="en" data-bs-theme="@(bool.Parse(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(Context.Request.Cookies["local_dark"] ?? "RmFsc2U="))) ? "dark" : "light")">
+﻿@{
+    bool DARK_THEME = bool.Parse(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(Context.Request.Cookies["local_dark"] ?? "RmFsc2U=")));
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="@(DARK_THEME ? "dark" : "light")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,7 +45,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - FormCreator - <a asp-area="" asp-page="/Guest/Privacy">Privacy</a> <button class="btn btn-link" onclick="changeMode()">Dark/Light Mode</button>
+            &copy; 2023 - FormCreator - <a asp-area="" asp-page="/Guest/Privacy">Privacy</a> <i onclick="changeMode()" class="p-2 bi @(DARK_THEME ? "bi-sun-fill text-warning" : "bi-moon-fill text-black")"></i>
         </div>
     </footer>
     <div class="modal fade" id="serviceUnavailable" tabindex="-1" aria-labelledby="serviceUnavailable" aria-hidden="true">
