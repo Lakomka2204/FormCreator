@@ -2,10 +2,11 @@
 @model FormCreator.Pages.Forms.AlterFormModel
 @using FormCreator.Pages.FormElements
 @using FormCreator.Models
+@using Microsoft.AspNetCore.Http.Features;
 @{
-    ViewData["Title"] = "New form";
+    ViewData["Title"] = Model?.Form?.Name ?? "New form";
+    bool isMobile = bool.Parse(HttpContext.Items["mobile"].ToString());
 }
-@Html.EditorForModel()
 
 @if (TempData["UserError"] != null)
 {
@@ -28,22 +29,22 @@
         <input type="hidden" asp-for="Form.Id" readonly>
         <input type="hidden" asp-for="Form.OwnerId" readonly>
         <div class="container">
-            <div class="d-flex justify-content-between m-1">
+            <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                     <a class="btn btn-sm btn-outline-secondary m-1" asp-page="/Forms/UserForms" asp-route-id="@User?.Identity?.Name">← Back to my forms</a>
                 </div>
-                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light justify-content-end">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#subnavbar" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div id="subnavbar" class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
-                        <ul class="navbar-nav flex-grow-1 align-items-center">
-                            <li class="nav-item">
-                                <div class="dropdown">
-                                    <a class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
+                @if (isMobile)
+                {
+                    <div class="btn-group dropstart">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" id="mobileOptionsEditForm" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                            Options
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="mobileOptionsEditForm">
+                            <li>
+                                <div class="btn-group dropdown">
+                                    <button class="text-primary dropdown-item dropdown-toggle" type="button" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
                                         Add Form Element
-                                    </a>
+                                    </button>
                                     <ul class="dropdown-menu" aria-labelledby="addFormElementDropdown">
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="ShortText"})',0)">Short Text</button></li>
                                         <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="LongText"})',0)">Long Text</button></li>
@@ -54,21 +55,39 @@
                                     </ul>
                                 </div>
                             </li>
-                            <li class="nav-item">
-                                <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#formSettings">Settings</button>
+                            <li>
+                                <button type="button" class="text-secondary dropdown-item" data-bs-toggle="modal" data-bs-target="#formSettings">Settings</button>
                             </li>
-                            <li class="nav-item">
-                                <button type="button" class="btn btn-sm btn-secondary m-1" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
+                            <li>
+                                <button type="button" class="text-secondary dropdown-item" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
                             </li>
-                            <li class="nav-item">
-                                <button type="submit" class="btn btn-sm btn-success m-1">Save changes</button>
+                            <li>
+                                <button type="submit" class="text-success dropdown-item">Save changes</button>
                             </li>
                         </ul>
-
-
-
                     </div>
-                </nav>
+                }
+                else
+                {
+                    <div class="d-flex flex-row align-items-center justify-content-end gap-1">
+                        <div class="dropdown">
+                            <a class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" href="#" data-bs-toggle="dropdown" id="addFormElementDropdown" aria-expanded="false">
+                                Add Form Element
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="addFormElementDropdown">
+                                <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="ShortText"})',0)">Short Text</button></li>
+                                <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="LongText"})',0)">Long Text</button></li>
+                                <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="Date"})',0)">Date</button></li>
+                                <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="Time"})',0)">Time</button></li>
+                                <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="SingleOption"})',0)">Single Option</button></li>
+                                <li><button type="button" class="dropdown-item add-form-element" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Add",new{type="MultipleOptions"})',0)">Multiple Options</button></li>
+                            </ul>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#formSettings">Settings</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="dynamicPage('@Url.Page("/Forms/AlterForm","Get",new{r="true"})',0)">Revert</button>
+                        <button type="submit" class="btn btn-sm btn-success">Save changes</button>
+                    </div>
+                }
             </div>
             <div class="card">
                 <div class="card-header">

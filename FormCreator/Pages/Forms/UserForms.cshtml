@@ -2,6 +2,8 @@
 @model FormCreator.Pages.Forms.MyFormsModel
 @{
     ViewData["Title"] = "User's forms";
+    bool isMobile = bool.Parse(HttpContext.Items["mobile"].ToString());
+
 }
 @if (TempData["UserError"] != null)
 {
@@ -45,10 +47,15 @@ else
     <div class="card">
         <div class="card-header">
             <h4 class="card-title">
-                @if(Model?.FCUser?.Id != Guid.Empty && !Model.SelfAccount)
-                {<a asp-page="/User/User" asp-route-id="@Model.FCUser.Id">@(Model?.FCUser?.Username)</a>}
+                @if (Model?.FCUser?.Id != Guid.Empty && !Model.SelfAccount)
+                {
+                    <a asp-page="/User/User" asp-route-id="@Model.FCUser.Id">@(Model?.FCUser?.Username)</a>
+                }
                 else
-                {@(Model?.FCUser?.Username)}'s forms</h4>
+                {
+                    @(Model?.FCUser?.Username)
+                }'s forms
+            </h4>
         </div>
         @if (Model?.SelfAccount ?? false)
         {
@@ -93,6 +100,7 @@ else
                     else
                         @foreach (var form in Model.Forms)
                         {
+
                             <tr class="gap-1">
                                 <td class="align-middle">
                                     <div class="col text-secondary fw-normal">
@@ -106,21 +114,55 @@ else
                                 </td>
                                 <td class="align-middle">
                                     <div class="col text-secondary">
-                                        <a asp-page="/Forms/ViewForm" asp-route-id="@form.Id" class="btn btn-outline-primary">View</a>
-                                        @if (Model.SelfAccount)
+                                        @if (isMobile)
                                         {
-                                            <a asp-page="/Forms/AlterForm" asp-route-id="@form.Id" class="btn btn-outline-secondary">Edit</a>
-                                            <a asp-page="/Forms/FormSubmissions" asp-route-id="@form.Id" class="btn btn-outline-secondary">Submissions</a>
-                                            <button data-bs-toggle="modal" data-bs-target="#deleteFormModal"
-                                                    data-bs-id="@form.Id"
-                                                    data-bs-name="@form.Name"
-                                                    class="btn btn-outline-danger">
-                                                Delete
-                                            </button>
+                                            <div class="btn-group dropdown">
+                                                <button class="text-primary dropdown-item dropdown-toggle" type="button" data-bs-toggle="dropdown" id="userFormsActions" aria-expanded="false">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="userFormsActions">
+                                                    <li>
+                                                        <a asp-page="/Forms/ViewForm" asp-route-id="@form.Id" class="dropdown-item text-primary">View</a>
+                                                    </li>
+                                                    @if (Model.SelfAccount)
+                                                    {
+                                                        <li>
+                                                            <a asp-page="/Forms/AlterForm" asp-route-id="@form.Id" class="dropdown-item text-secondary">Edit</a>
+                                                        </li>
+                                                        <li>
+                                                            <a asp-page="/Forms/FormSubmissions" asp-route-id="@form.Id" class="dropdown-item text-secondary">Submissions</a>
+                                                        </li>
+                                                        <li>
+                                                            <button data-bs-toggle="modal" data-bs-target="#deleteFormModal"
+                                                                    data-bs-id="@form.Id"
+                                                                    data-bs-name="@form.Name"
+                                                                    class="dropdown-item text-danger">
+                                                                Delete
+                                                            </button>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <a asp-page="/Forms/ViewForm" asp-route-id="@form.Id" class="btn btn-outline-primary">View</a>
+                                            @if (Model.SelfAccount)
+                                            {
+                                                <a asp-page="/Forms/AlterForm" asp-route-id="@form.Id" class="btn btn-outline-secondary">Edit</a>
+                                                <a asp-page="/Forms/FormSubmissions" asp-route-id="@form.Id" class="btn btn-outline-secondary">Submissions</a>
+                                                <button data-bs-toggle="modal" data-bs-target="#deleteFormModal"
+                                                        data-bs-id="@form.Id"
+                                                        data-bs-name="@form.Name"
+                                                        class="btn btn-outline-danger">
+                                                    Delete
+                                                </button>
+                                            }
                                         }
                                     </div>
                                 </td>
                             </tr>
+
                         }
                 </tbody>
             </table>

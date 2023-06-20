@@ -28,6 +28,8 @@ namespace FormCreator
             }
             try
             {
+                var ua = context.Request.Headers.UserAgent.Aggregate((a, b) => a + b).Contains("Mobile", StringComparison.OrdinalIgnoreCase);
+                context.Items["mobile"] = ua;
                 string token = context.Request.Cookies["jwt"];
                 using var httpClient = httpClientFactory.CreateClient("FCApiClient");
                 //httpClient.Timeout = TimeSpan.FromMilliseconds(500);
@@ -60,7 +62,6 @@ namespace FormCreator
                             string resString = await response.Content.ReadAsStringAsync();
                             var res = JsonSerializer.Deserialize<ServerResponse>(resString);
                             context.Items["UserError"] = res.error;
-
                             context.Response.Cookies.Delete("jwt");
                             context.User = null;
                         }
