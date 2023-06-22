@@ -8,6 +8,6 @@ namespace FormCreator.Services
         List<Submission> GetSubmissionsByForm(Guid formId);
         List<Submission> GetSubmissionsByUser(Guid userId);
         Submission? Submit(Submission submission);
-        bool RemoveSubmission(Guid id);
+        bool DeleteSubmission(Guid id);
     }
 }

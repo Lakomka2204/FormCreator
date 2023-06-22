@@ -29,16 +29,20 @@ namespace FormCreator.Controllers
             TokenService.ValidationState vs;
             if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
+
             var pwd = tokenService.GetClientPassword(Request.Headers.Authorization);
             if (string.IsNullOrWhiteSpace(pwd))
-                return BadRequest(new { error = "Bad pwd." });
-            if (user.Password == pwd)
-            {
-                Response.Headers.Authorization = tokenService.CreateAuthorizationToken(user);
-                return Ok(new { stringResponse = "Pass match." });
-            }
-            else
+                return BadRequest(new { error = "No password." });
+
+            if (user.AccountState == AccountState.PendingDeletion)
+                return Unauthorized(new { error = "Account is deleted." });
+
+            if (user.Password != pwd)
                 return Unauthorized(new { error = "Pass mismatch." });
+
+            Response.Headers.Authorization = tokenService.CreateAuthorizationToken(user);
+            return Ok();
+
         }
         [HttpPost("pwdcompare")]
         public IActionResult PasswordCompare(string e, string d)
@@ -117,9 +121,8 @@ namespace FormCreator.Controllers
                 switch (loginStatus)
                 {
                     case IUserService.LoginStatus.WrongPassword:
-                        return Unauthorized(new { error = "Wrong password." });
                     case IUserService.LoginStatus.NoUser:
-                        return Unauthorized(new { error = "User doesn't exists." });
+                        return Unauthorized(new { error = "Invalid login or password." });
                     case IUserService.LoginStatus.NoStatus:
                         return Unauthorized(new { error = "Failed to init user/get method" });
                     case IUserService.LoginStatus.AccountDeleted:

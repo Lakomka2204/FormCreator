@@ -42,7 +42,6 @@ else
             <span>Sort by </span>
             @foreach (var e in Enum.GetValues<FormSubmissionsModel.Display>())
             {
-                @*<button class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")" type="button" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions",new{by=e})',1)">@e.ToString()</button>*@
                 <a asp-page="/Forms/FormSubmissions" asp-route-by="@e" class="btn btn-sm btn-secondary @(Model.DisplayType == e ? "disabled" : "active")">@e.ToString()</a>
             }
         </div>
@@ -229,6 +228,15 @@ else
                                     Element = question,
                                     Mode = FormDisplayMode.SubmissionMultiQuestions,
                                 };
+                        formModel.MultiSubmissions = formModel.MultiSubmissions.Select(x =>
+                        {
+                            if (x.Submission == null) x.Submission = new GeneralFormSubmissionModel()
+                                    {
+                                        QuestionType = FormCreator.Models.QuestionType.System,
+                                        Answer = "No answers for this question",
+                                        Index = question.Index,
+                                    }; return x;
+                        }).ToList();
                         switch (question.QuestionType)
                         {
                             case QuestionType.ShortText:
@@ -284,16 +292,15 @@ else
                                     title.text(button.data('bs-option')); //option
                                     const count = button.data('bs-count');
                                     const href = location.pathname + "?by=User&u=";
-                                    if (count == 0)
-                                    {
+                                    if (count == 0) {
                                         const liEmptyElement = `<li class="w-100 text-center">No choices</li>`;
                                         modalBody.append(liEmptyElement);
                                         return;
                                     }
                                     for (let i = 0; i < count; i++) {
-                                        const username = button.data('bs-username['+i+']'); //username
+                                        const username = button.data('bs-username[' + i + ']'); //username
                                         const uid = button.data('bs-uid[' + i + ']'); //uid
-                                        const subCount = button.data('bs-count['+i+']'); // count
+                                        const subCount = button.data('bs-count[' + i + ']'); // count
                                         const liElement = `<li class="w-100"> <a class="form-control text-decoration-none" href='${href + uid}'>${username} <strong>(${subCount} submission${subCount > 1 ? 's' : ''})</strong></a></li>`;
                                         modalBody.append(liElement);
 

@@ -39,13 +39,23 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            @{
+                ViewBag.r = Context.Items["UserError"]?.ToString();
+                if (!string.IsNullOrEmpty(ViewBag.r))
+                {
+                    <div class="alert alert-danger alert-dismissible">@ViewBag.r
+                        <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
+                    </div>
+                    
+                }
+            }
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - FormCreator - <a asp-area="" asp-page="/Guest/Privacy">Privacy</a> <i onclick="changeMode()" class="p-2 bi @(DARK_THEME ? "bi-sun-fill text-warning" : "bi-moon-fill text-black")"></i>
+            &copy; 2023 - FormCreator - <a asp-area="" asp-page="/Guest/Privacy">Privacy</a> <i onclick="changeMode()" class="btn bi @(DARK_THEME ? "bi-sun-fill text-warning" : "bi-moon-fill text-black")"></i>
         </div>
     </footer>
     <div class="modal fade" id="serviceUnavailable" tabindex="-1" aria-labelledby="serviceUnavailable" aria-hidden="true">

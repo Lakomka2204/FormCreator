@@ -34,7 +34,7 @@ namespace FormCreator.Services
             _submissions.InsertOne(submission);
             return submission;
         }
-        public bool RemoveSubmission(Guid id)
+        public bool DeleteSubmission(Guid id)
         {
             return _submissions.DeleteOne(x =>  x.Id == id).DeletedCount > 0;
         }

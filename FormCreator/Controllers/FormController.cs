@@ -23,7 +23,6 @@ namespace FormCreator.Controllers
             this.userService = userService;
         }
         [HttpGet("form")]
-        [MapToApiVersion("1")]
         public IActionResult GetById(string? id)
         {
             tokenService.ValidateRequestToken(HttpContext.Request.Headers.Authorization, out UserModel? user);
@@ -94,6 +93,8 @@ namespace FormCreator.Controllers
 
             if (form.OwnerId != user.Id) return StatusCode(StatusCodes.Status403Forbidden, new { error = "No permissions" });
             formService.DeleteForm(fid);
+            foreach (var sub in submissionService.GetSubmissionsByForm(fid))
+                submissionService.DeleteSubmission(sub.Id);
             return Ok(new { boolResponse = true, stringResponse = form.Name });
         }
         [HttpDelete("deleteall")]

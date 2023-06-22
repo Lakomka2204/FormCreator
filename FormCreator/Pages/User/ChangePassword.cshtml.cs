@@ -83,7 +83,7 @@ namespace FormCreator.Pages.User
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToPage("/Index");
+                    return RedirectToPage("/User/Logout");
                 }
                 else
                 {

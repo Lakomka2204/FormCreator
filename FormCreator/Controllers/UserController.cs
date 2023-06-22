@@ -134,12 +134,36 @@ namespace FormCreator.Controllers
             if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
                 return Unauthorized(new { error = TokenService.GetStatus(vs) });
 
+            if (!emailService.CheckCodeById(model.EmailId, model.Code))
+                return Unauthorized(new { error = "Invalid code." });
+
             if (!passwordService.VerifyPassword(user, user.Password, model.Password))
                 return BadRequest(new { error = "Wrong password." });
+
             var isDeleted = userService.SetDeletionDate(user.Id, out DateTime deletionDate);
             if (isDeleted)
                 return Ok(new { boolResponse = isDeleted, stringResponse = deletionDate.ToString("R") });
             else return BadRequest(new { error = "Account is already planned for deletion", stringResponse = user.DeletionDate.ToString() });
+        }
+        public record EmailModel(string? Reason, string? Password);
+        [HttpPost("sendemail")]
+        public IActionResult SendEmail([FromBody] EmailModel model)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel? user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+            
+            if (!user.EmailVerified)
+                return Unauthorized(new { error = "Email is not verified." });
+
+            if (!passwordService.VerifyPassword(user, user.Password, model.Password))
+                return Unauthorized(new { error = "Wrong password." });
+
+            if (!emailService.CanSendEmail(user.Id))
+                return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Email rate limited." });
+
+            var eId = emailService.SendVerificationCodeEmail(user.Id, user.Email, model.Reason);
+            return Ok(new { stringResponse = eId });
         }
         [HttpGet("self")]
         public IActionResult GetUserByToken()

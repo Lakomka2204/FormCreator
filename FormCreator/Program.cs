@@ -161,7 +161,7 @@ if (!app.Environment.IsDevelopment())
             options.SwaggerEndpoint($"/swagger/{desc.GroupName}/swagger.json", $"FCApi {desc.GroupName}");
         }
     });
-    app.UseExceptionHandler("/Pub/Error");
+    app.UseExceptionHandler("/Guest/Error");
     app.UseHsts();
 }
 

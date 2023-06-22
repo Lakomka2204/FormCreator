@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Server.HttpSys;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace FormCreator.Pages.User
 {
@@ -20,24 +22,36 @@ namespace FormCreator.Pages.User
         {
             this.httpClientFactory = httpClientFactory;
         }
-        public async Task<IActionResult> OnGetAsync(string? password)
+        [BindProperty]
+        public DeleteAccountClassModel DeleteAccountData { get; set; }
+        public async Task<IActionResult> OnGetAsync(string? code, string? password, string? emailId)
         {
             try
             {
                 string token = HttpContext.Request.Cookies["jwt"];
                 if (password == null)
                 {
-
                     TempData["DeleteAccountError"] = "No password";
-                    return Redirect($"/user/{HttpContext.User.Identity.Name}");
+                    return RedirectToPage("/User/User", new { id = HttpContext.User.Identity.Name });
                 }
-
+                if (!Guid.TryParse(emailId,out Guid eId))
+                {
+                    TempData["DeleteAccountError"] = "You need to send email.";
+                    return RedirectToPage("/User/User", new { id = HttpContext.User.Identity.Name });
+                }
+                if (code == null)
+                {
+                    TempData["DeleteAccountError"] = "No code";
+                    return RedirectToPage("/User/User", new { id = HttpContext.User.Identity.Name });
+                }
                 string query = $"api/v1/user/deleteaccount";
                 var client = httpClientFactory.CreateClient("FCApiClient");
 
                 DeleteAccountClassModel body = new DeleteAccountClassModel()
                 {
                     Password = password,
+                    Code = code,
+                    EmailId = eId
                 };
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var json = JsonSerializer.Serialize(body);

@@ -85,7 +85,7 @@
                     {
                         <a asp-page="/Forms/FormSubmissions" asp-route-by="@FormSubmissionsModel.Display.User" asp-route-u="@sub.Id" class="form-control w-auto text-decoration-none" data-bs-toggle="tooltip"
                            data-bs-title="Submitted by @sub.Username"
-                           data-bs-placement="right">@sub.Submission.Answer</a>
+                           data-bs-placement="right">@sub.Submission?.Answer</a>
                     }
                 </div>
             </div>

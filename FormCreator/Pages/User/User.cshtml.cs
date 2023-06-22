@@ -20,6 +20,8 @@ namespace FormCreator.Pages.User
         }
         [BindProperty]
         public Guid Id { get; set; }
+        [BindProperty]
+        public DeleteAccountClassModel DeleteAccountData { get; set; }
         public async Task<IActionResult> OnGetAsync(string id)
         {
             try

@@ -8,13 +8,6 @@
 
 <hr />
 
-@{
-    ViewBag.r = HttpContext.Items["UserError"]?.ToString();
-    if (!string.IsNullOrEmpty(ViewBag.r))
-    {
-        <div class="alert alert-danger">@ViewBag.r</div>
-    }
-}
 @if (TempData["AccountRestoreToken"] != null)
 {
     <script>
@@ -61,7 +54,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <span class="fs-6">Deletion date: @TempData["AccountDeletionDate"]</span>
+                        <span class="fs-6">If you want to restore account press <strong>Restore account</strong></span>
                     </div>
                     <input name="token" type="hidden" value="@TempData["AccountRestoreToken"]" />
                     <div class="modal-footer">
