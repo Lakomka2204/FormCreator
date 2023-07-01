@@ -20,7 +20,7 @@ namespace FormCreator.Pages.Forms
         {
             this.httpClientFactory = httpClientFactory;
         }
-        public FormModel? Form { get; set; }
+        public FormModel Form { get; set; }
         [BindProperty]
         public Submission Submission { get; set; }
         public bool SelfForm { get; set; }
@@ -76,11 +76,12 @@ namespace FormCreator.Pages.Forms
                 TempData["UserError"] = "Form was not submitted";
             }
             IsSubmitted = true; // todo submission window
-            Submission = null;
+            //Submission = null;
             Form = null;
-            return Page();
+            Response.Cookies.Append("FORM_ID", Submission.FormId.ToString());
+            return RedirectToPage("/Forms/FormSubmitted");
         }
-        public async Task<IActionResult> OnGetAsync(string? id)
+        public async Task<IActionResult> OnGetAsync(string id)
         {
             string token = HttpContext.Request.Cookies["jwt"];
             using var client = httpClientFactory.CreateClient("FCApiClient");

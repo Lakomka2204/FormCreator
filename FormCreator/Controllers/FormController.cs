@@ -202,7 +202,7 @@ namespace FormCreator.Controllers
             foreach (var sub in subByUser)
                 if (submissionService.DeleteSubmission(sub.Id))
                     deleted++;
-            return Ok(new { stringResponse = deleted });
+            return Ok(new { stringResponse = deleted.ToString() });
 
         }
         [HttpDelete("submissions/delete")]

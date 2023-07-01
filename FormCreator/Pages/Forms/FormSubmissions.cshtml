@@ -12,6 +12,13 @@
         <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
     </div>
 }
+@if (TempData["UserSuccess"] != null)
+{
+    <div class="alert alert-success alert-dismissible d-flex" role="alert">
+        <span>@TempData["UserSuccess"]</span>
+        <span type="button" class="btn btn-close" data-bs-dismiss="alert" aria-label="Close"></span>
+    </div>
+}
 <script>
     $(document).ready(function () {
         $('#search-input').on('input', function () {
@@ -62,7 +69,11 @@ else
                     @foreach (var submission in Model.Submissions)
                     {
                         <div class="card mb-3">
-                            <div class="card-header">ID: <span class="text-muted">@submission.Id</span></div>
+                            <div class="card-header d-flex align-items-center">
+                                ID: <span class="text-muted">@submission.Id</span>
+                                <a asp-page="/Forms/DeleteSubmission" asp-route-type="@DeleteSubmissionModel.DeletionType.Single" asp-route-id="@submission.Id" class="btn btn-danger ms-auto">Delete</a>
+                            </div>
+
                             <div class="card-body">
                                 <p class="card-text">Submitted at: @submission.SubmissionDate.ToString("R")</p>
                                 <h3 class="card-subtitle mb-2">Answers:</h3>
@@ -114,38 +125,51 @@ else
                     }
                     break;
                 case FormSubmissionsModel.Display.User:
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownButton1" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-haspopup="true" aria-expanded="false">
-                            @{
-                                var fUser = Model.AssociatedUsers.FirstOrDefault(x => x.Id == Model.SelectedUser);
-                            }
-                            @if (fUser != null)
-                            {
-                                <span>@fUser?.Username (@fUser?.Id)</span>
-                            }
-                            else
-                            {
-                                <span>Select User</span>
-                            }
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownButton1">
-                            <div class="d-flex flex-column">
-
-                                <input type="text" class="form-control m-2 w-auto" id="search-input" placeholder="Search user">
-                                @foreach (var user in Model.AssociatedUsers)
-                                {
-                                    <a class="dropdown-item" asp-page="/Forms/FormSubmissions" asp-route-by="@Model.DisplayType" asp-route-u="@user.Id">@user.Username (@user.Id)</a>
-                                    @*<button class="dropdown-item" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions", new { by = Model.DisplayType, u = user.Id })', 1)">@user.Username (@user.Id)</button>*@
+                    <div class="d-flex flex-row align-items-center gap-1 m-1">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownButton1" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-haspopup="true" aria-expanded="false">
+                                @{
+                                    var fUser = Model.AssociatedUsers.FirstOrDefault(x => x.Id == Model.SelectedUser);
                                 }
+                                @if (fUser != null)
+                                {
+                                    <span>@fUser?.Username (@fUser?.Id)</span>
+                                }
+                                else
+                                {
+                                    <span>Select User</span>
+                                }
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownButton1">
+                                <div class="d-flex flex-column">
+
+                                    <input type="text" class="form-control m-2 w-auto" id="search-input" placeholder="Search user">
+                                    @foreach (var user in Model.AssociatedUsers)
+                                    {
+                                        <a class="dropdown-item" asp-page="/Forms/FormSubmissions" asp-route-by="@Model.DisplayType" asp-route-u="@user.Id">@user.Username (@user.Id)</a>
+                                        @*<button class="dropdown-item" onclick="dynamicPage('@Url.Page("/Forms/FormSubmissions", new { by = Model.DisplayType, u = user.Id })', 1)">@user.Username (@user.Id)</button>*@
+                                    }
+                                </div>
                             </div>
                         </div>
+                        @{
+                            var userSubmissions = Model.Submissions.Where(x => x.UserId == Model.SelectedUser);
+                        }
+                        <h4>Submissions by user: @userSubmissions.Count()</h4>
+                        @if (userSubmissions.Any())
+                        {
+                            <a asp-page="/Forms/DeleteSubmission" asp-route-type="@DeleteSubmissionModel.DeletionType.User" asp-route-id="@fUser.Id" asp-route-fid="@Model.Form.Id" class="btn btn-danger ms-auto">Delete all submissions by user</a>
+                        }
                     </div>
-                    var userSubmissions = Model.Submissions.Where(x => x.UserId == Model.SelectedUser);
-                    <h4>Submissions by user: @userSubmissions.Count()</h4>
                     @foreach (var subs in userSubmissions)
                     {
                         <div class="card mb-3">
-                            <div class="card-header">ID: <span class="text-muted">@subs.Id</span></div>
+                            <div class="card-header d-flex align-items-center">
+                                ID: <span class="text-muted">@subs.Id</span>
+                                <a asp-page="/Forms/DeleteSubmission" asp-route-type="@DeleteSubmissionModel.DeletionType.Single" asp-route-id="@subs.Id" class="btn btn-danger ms-auto">Delete</a>
+
+                            </div>
+
                             <div class="card-body">
                                 <p class="card-text">Submitted at: @subs.SubmissionDate.ToString("R")</p>
                                 <h3 class="card-subtitle mb-2">Answers:</h3>
