@@ -29,7 +29,7 @@ namespace FormCreator.Services
                 UpdateUser(userId, user);
             return match ? VerifyStatus.Verified : VerifyStatus.WrongCode;
         }
-        public UserModel? GetUserByLoginAndPassword(string login, string password, out LoginStatus loginStatus)
+        public UserModel GetUserByLoginAndPassword(string login, string password, out LoginStatus loginStatus)
         {
             try
             {
@@ -49,6 +49,11 @@ namespace FormCreator.Services
                     loginStatus = LoginStatus.WrongPassword;
                     return null;
                 }
+                if (user.DeletionDate <= DateTime.UtcNow && user.AccountState == AccountState.PendingDeletion)
+                {
+                    user.AccountState = AccountState.Deleted;
+                    UpdateUser(user.Id,user);
+                }
                 if (user.AccountState == AccountState.Deleted)
                 {
                     loginStatus = LoginStatus.NoUser;
@@ -63,7 +68,7 @@ namespace FormCreator.Services
                 return null;
             }
         }
-        public UserModel? RegisterUser(UserModel user)
+        public UserModel RegisterUser(UserModel user)
         {
             if (GetUsers().Any(x =>
             {
@@ -87,11 +92,13 @@ namespace FormCreator.Services
         {
             var u = _users.Find(x => x.Id == id).FirstOrDefault();
             if (u == null) return null;
-            if (DateTime.Now >= u.DeletionDate && u.AccountState == AccountState.PendingDeletion)
+            if (u.AccountState == AccountState.Deleted)
+                return null;
+            if (DateTime.UtcNow >= u.DeletionDate && u.AccountState == AccountState.PendingDeletion)
             {
                 u.AccountState = AccountState.Deleted;
                 UpdateUser(id, u);
-                return u;
+                return null;
             }
             return u;
         }

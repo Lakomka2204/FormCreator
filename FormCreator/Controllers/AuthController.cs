@@ -130,7 +130,6 @@ namespace FormCreator.Controllers
                         {
                             error = "Account is deleted",
                             token = jwt.EncryptTokenID(user.Id),
-                            stringResponse = user.DeletionDate.ToString("R"),
                         });
                     case IUserService.LoginStatus.Success:
                         Response.Headers.Authorization = tokenService.CreateAuthorizationToken(user);

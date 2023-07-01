@@ -1,12 +1,6 @@
-﻿function copyText(elementId) {
-    if (!navigator.clipboard) return console.log("HTTPS PROTOCOL REQUIRED");
-    var element = $('#' + elementId);
-    var text = element.text();
+﻿function copyText(text) {
+    if (!navigator.clipboard) return console.log("NOT SECURE");
     navigator.clipboard.writeText(text);
-    if (window.getSelection) { window.getSelection().removeAllRanges(); }
-    else if (document.selection) { document.selection.empty(); }
-    element.blur();
-    changeClass();
 }
 function getCookie(cname) {
     let name = cname + "=";

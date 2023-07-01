@@ -164,6 +164,74 @@ namespace FormCreator.Controllers
                 return BadRequest(new { error = "No submissions." });
             return Ok(new { submissionModelResponse = retSub });
         }
+        [HttpDelete("submissions/deleteuser")]
+        public IActionResult DeleteAllByUser(string uid, string fid)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel currentUser)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+
+            if (!currentUser.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
+
+            if (!Guid.TryParse(uid, out var userId))
+                return BadRequest(new { error = "Invalid uid." });
+
+            if (!Guid.TryParse(fid, out var formId))
+                return BadRequest(new { error = "Invalid fid." });
+
+            var form = formService.GetForm(formId);
+            if (form == null)
+                return NotFound(new { error = "Form not found." });
+
+            if (form.OwnerId != currentUser.Id)
+                return Unauthorized(new { error = "No permissions." });
+
+            var user = userService.GetUser(userId);
+            if (user == null)
+                return NotFound(new { error = "User not found." });
+
+            var submissions = submissionService.GetSubmissionsByForm(formId);
+            if (submissions == null || submissions.Count == 0)
+                return NotFound(new { error = "No submissions in the form." });
+
+            var subByUser = submissions.Where(x => x.UserId == userId);
+            if (!subByUser.Any())
+                return NotFound(new { error = "No submissions from user." });
+            int deleted = 0;
+            foreach (var sub in subByUser)
+                if (submissionService.DeleteSubmission(sub.Id))
+                    deleted++;
+            return Ok(new { stringResponse = deleted });
+
+        }
+        [HttpDelete("submissions/delete")]
+        public IActionResult DeleteSubmission(string id)
+        {
+            TokenService.ValidationState vs;
+            if ((vs = tokenService.ValidateRequestToken(Request.Headers.Authorization, out UserModel user)) != TokenService.ValidationState.Valid)
+                return Unauthorized(new { error = TokenService.GetStatus(vs) });
+
+            if (!Guid.TryParse(id, out var submissionId))
+                return BadRequest(new { error = "Invalid id." });
+
+            if (!user.EmailVerified)
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "Email is not verified." });
+
+            var submission = submissionService.GetSubmission(submissionId);
+            if (submission == null)
+                return NotFound(new { error = "Submission not found." });
+
+            var form = formService.GetForm(submission.FormId);
+            if (form == null)
+                return NotFound(new { error = "Form not found. (strange)" });
+
+            if (form.OwnerId != user.Id)
+                return Unauthorized(new { error = "No permissions." });
+
+            bool deleted = submissionService.DeleteSubmission(submissionId);
+            return Ok(new { stringResponse = submission.Id.ToString(), boolResponse = deleted });
+        }
         [HttpGet("submissions/form")]
         public IActionResult GetSubmissionsByForm(string? formId)
         {

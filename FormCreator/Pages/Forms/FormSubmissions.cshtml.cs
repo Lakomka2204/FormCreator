@@ -31,6 +31,7 @@ namespace FormCreator.Pages.Forms
         {
             string token = Request.Cookies["jwt"];
             using var client = httpClientFactory.CreateClient("FCApiClient");
+            
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             string subEndpoint = $"/api/v1/forms/submissions/form?formId={id}";
             using var response = await client.GetAsync(subEndpoint);

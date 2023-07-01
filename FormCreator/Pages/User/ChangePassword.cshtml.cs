@@ -25,7 +25,7 @@ namespace FormCreator.Pages.User
         [BindProperty]
         [DataType(DataType.Password)]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.", MinimumLength = 6)]
-        [Display(Prompt = "New Password")]
+        [Display(Name = "New Password",Prompt = "New Password")]
         public string NewPassword { get; set; }
 
         [BindProperty]
