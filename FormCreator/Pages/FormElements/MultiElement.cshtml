@@ -36,7 +36,7 @@
                     @for (int i = 0; i < Model.Element.Options.Count; i++)
                     {
                         bool correct = false;
-                        List<int>? ints = (List<int>?)Model.Element.Answer;
+                        List<int> ints = (List<int>)Model.Element.Answer;
                         if (ints == null) return;
                         correct = ints.Contains(i);
                         <div class="d-flex flex-row align-items-center">
@@ -91,7 +91,7 @@
                         @for (int i = 0; i < Model.Element.Options.Count; i++)
                         {
                             bool correct = false;
-                            List<int>? ints = (List<int>?)Model.Submission.Answer;
+                            List<int> ints = (List<int>)Model.Submission.Answer;
                             if (ints == null) return;
                             correct = ints.Contains(i);
                             <div class="d-flex flex-row align-items-center">
